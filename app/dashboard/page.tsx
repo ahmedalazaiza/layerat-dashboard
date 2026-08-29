@@ -40,7 +40,6 @@ import { cn } from "@/lib/utils";
 
 export default function DashboardOverviewPage() {
   const { user, projects, creators, notifications, refreshFromDb, isLoadingDb } = useSession();
-  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const [isPurging, setIsPurging] = useState(false);
   const [purgedSuccess, setPurgedSuccess] = useState(false);
 
@@ -82,17 +81,17 @@ export default function DashboardOverviewPage() {
   return (
     <div className="space-y-8">
       {/* Super Admin Top Command Banner */}
-      <div className="relative overflow-hidden rounded-[28px] border border-red-500/30 bg-gradient-to-br from-[var(--bg-elevated)] via-[var(--bg-neutral)] to-red-500/5 p-6 sm:p-8 shadow-sm">
+      <div className="relative overflow-hidden rounded-[28px] border border-[var(--border-neutral)] bg-gradient-to-br from-[var(--bg-elevated)] via-[var(--bg-elevated)] to-[var(--bg-neutral)] p-6 sm:p-8 shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/15 border border-red-500/30 px-3 py-0.5 text-xs font-bold text-red-600 dark:text-red-400">
-                <Shield className="h-3.5 w-3.5 fill-current" />
-                <span>Super Admin Root Console</span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--chip-bg)] text-[var(--chip-fg)] px-3 py-0.5 text-xs font-bold shadow-2xs">
+                <Shield className="h-3.5 w-3.5 fill-current text-[var(--accent)]" />
+                <span>Super Admin Console</span>
               </span>
               <span className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 text-[11px] font-mono font-bold flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
-                <span>Platform Healthy</span>
+                <span>Platform Operational</span>
               </span>
               <span className="text-xs text-[var(--content-tertiary)] font-mono">
                 Production v1.2.0
@@ -129,7 +128,7 @@ export default function DashboardOverviewPage() {
               href="/dashboard/notifications"
               className="flex items-center gap-2 rounded-full border border-[var(--border-neutral)] bg-[var(--bg-elevated)] px-4 py-2.5 text-xs font-bold text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] active:scale-95 transition-all shadow-xs"
             >
-              <Radio className="h-4 w-4 text-red-500 animate-pulse" />
+              <Radio className="h-4 w-4 text-[var(--content-secondary)]" />
               <span>Global Broadcast</span>
             </Link>
 
@@ -143,12 +142,12 @@ export default function DashboardOverviewPage() {
           </div>
         </div>
 
-        {/* Decorative Radial Glow */}
-        <div className="pointer-events-none absolute -right-16 -bottom-16 h-64 w-64 rounded-full bg-red-500/10 blur-3xl" />
+        {/* Subtle Decorative Radial Glow */}
+        <div className="pointer-events-none absolute -right-16 -bottom-16 h-64 w-64 rounded-full bg-[var(--accent)]/5 blur-3xl" />
       </div>
 
       {/* System Infrastructure Health Metric Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-[20px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-[20px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-xs shadow-xs">
         <div className="flex items-center gap-2.5 p-2">
           <Database className="h-4 w-4 text-emerald-500 shrink-0" />
           <div className="min-w-0">
@@ -200,7 +199,7 @@ export default function DashboardOverviewPage() {
           change="+28.6%"
           trend="up"
           icon={Heart}
-          accentColor="#F43F5E"
+          accentColor="#10B981"
           sparklineData={[40, 35, 60, 75, 70, 85, 95]}
         />
         <StatsCard
@@ -264,12 +263,6 @@ export default function DashboardOverviewPage() {
             href: "/dashboard/media",
             icon: Database,
           },
-          {
-            label: "AI Director Studio",
-            desc: "Vision benchmarks",
-            href: "/dashboard/ai-lab",
-            icon: Sparkles,
-          },
         ].map((action) => {
           const Icon = action.icon;
           return (
@@ -279,7 +272,7 @@ export default function DashboardOverviewPage() {
               className="group flex flex-col justify-between rounded-[20px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-4 transition-all duration-200 hover:border-[var(--content-primary)] hover:shadow-xs cursor-pointer"
             >
               <div className="flex items-center justify-between">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--bg-neutral)] text-[var(--content-primary)] group-hover:bg-[var(--accent)] group-hover:text-black transition-colors">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--bg-neutral)] text-[var(--content-primary)] group-hover:bg-[var(--chip-bg)] group-hover:text-[var(--chip-fg)] transition-colors">
                   <Icon className="h-4 w-4" />
                 </div>
                 <ArrowUpRight className="h-3.5 w-3.5 text-[var(--content-tertiary)] group-hover:text-[var(--content-primary)] transition-colors" />

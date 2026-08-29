@@ -125,9 +125,9 @@ export function PlatformSettingsView() {
   return (
     <div className="space-y-6">
       {/* Super Admin Status Banner */}
-      <div className="rounded-[24px] border border-red-500/30 bg-red-500/5 p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white font-bold">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--primary-forest-green)] dark:bg-[var(--accent)] text-white dark:text-black font-bold">
             <Shield className="h-5 w-5 fill-current" />
           </div>
           <div>
@@ -135,7 +135,7 @@ export function PlatformSettingsView() {
               <h2 className="text-sm font-bold text-[var(--content-primary)]">
                 Super Admin Master Governance & Security Controls
               </h2>
-              <span className="rounded bg-red-500 text-white px-2 py-0.2 text-[9px] font-mono uppercase font-extrabold">
+              <span className="rounded bg-[var(--chip-bg)] text-[var(--chip-fg)] px-2 py-0.2 text-[9px] font-mono uppercase font-bold">
                 Root Level
               </span>
             </div>
@@ -146,10 +146,10 @@ export function PlatformSettingsView() {
         </div>
 
         {/* Maintenance Mode Toggle Switch */}
-        <div className="flex items-center gap-3 bg-[var(--bg-elevated)] p-2.5 rounded-[16px] border border-[var(--border-neutral)] shrink-0">
+        <div className="flex items-center gap-3 bg-[var(--bg-neutral)] p-2.5 rounded-[16px] border border-[var(--border-neutral)] shrink-0">
           <div>
             <div className="text-xs font-bold text-[var(--content-primary)] flex items-center gap-1.5">
-              <Lock className="h-3.5 w-3.5 text-amber-500" />
+              <Lock className="h-3.5 w-3.5 text-[var(--content-secondary)]" />
               <span>Maintenance Mode</span>
             </div>
             <div className="text-[10px] text-[var(--content-tertiary)]">
@@ -162,12 +162,12 @@ export function PlatformSettingsView() {
             onClick={() => setIsMaintenanceMode(!isMaintenanceMode)}
             className={cn(
               "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-              isMaintenanceMode ? "bg-amber-500" : "bg-[var(--bg-neutral)]"
+              isMaintenanceMode ? "bg-[var(--chip-bg)]" : "bg-[var(--bg-elevated)] border border-[var(--border-neutral)]"
             )}
           >
             <span
               className={cn(
-                "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white dark:bg-[var(--accent)] shadow ring-0 transition duration-200 ease-in-out",
                 isMaintenanceMode ? "translate-x-5" : "translate-x-0"
               )}
             />

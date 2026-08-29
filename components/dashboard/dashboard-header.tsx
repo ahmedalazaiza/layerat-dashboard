@@ -84,9 +84,9 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
           <div className="flex items-center gap-2">
             <Link
               href="/dashboard"
-              className="text-[var(--content-tertiary)] hover:text-[var(--content-primary)] transition-colors text-xs font-semibold flex items-center gap-1.5"
+              className="text-[var(--content-secondary)] hover:text-[var(--content-primary)] transition-colors text-xs font-semibold flex items-center gap-1.5"
             >
-              <Shield className="h-3.5 w-3.5 text-red-500 fill-current" />
+              <Shield className="h-3.5 w-3.5 text-[var(--content-primary)]" />
               <span className="hidden sm:inline font-bold">Admin Console</span>
             </Link>
             <ChevronRight className="h-3 w-3 text-[var(--content-tertiary)]" />
@@ -103,9 +103,9 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
         {/* Right: Quick Action Controls */}
         <div className="flex items-center gap-2">
           {/* Super Admin Status Tag */}
-          <span className="hidden xl:inline-flex items-center gap-1.5 rounded-full bg-red-500/10 border border-red-500/20 px-3 py-1 text-[11px] font-mono font-extrabold text-red-600 dark:text-red-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping" />
-            <span>Root Admin Role</span>
+          <span className="hidden xl:inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-neutral)] px-3 py-1 text-[11px] font-mono font-bold text-[var(--content-primary)] shadow-2xs">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
+            <span>Root Admin</span>
           </span>
 
           {/* Command Bar Trigger Button */}

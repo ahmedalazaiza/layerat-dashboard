@@ -121,7 +121,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
   };
 
   const handleBulkDelete = async () => {
-    if (confirm(`Super Admin: Are you sure you want to permanently delete ${selectedIds.size} selected monographs?`)) {
+    if (confirm(`Super Admin: Are you sure you want to delete ${selectedIds.size} selected monographs?`)) {
       for (const id of Array.from(selectedIds)) {
         await deleteProject(id);
       }
@@ -138,42 +138,42 @@ export function ProjectTable({ projects }: ProjectTableProps) {
     <div className="space-y-4">
       {/* Super Admin Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs font-semibold">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] px-4 py-3 text-xs font-semibold shadow-xs">
           <div className="flex items-center gap-2 text-[var(--content-primary)]">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white font-bold font-mono text-[10px]">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--primary-forest-green)] dark:bg-[var(--accent)] text-white dark:text-black font-bold font-mono text-[10px]">
               {selectedIds.size}
             </span>
-            <span className="font-bold">Monographs selected for Super Admin action:</span>
+            <span className="font-bold">Monographs selected:</span>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
               onClick={() => handleBulkPublish(true)}
-              className="rounded-full bg-[var(--bg-elevated)] border border-[var(--border-neutral)] px-3 py-1.5 hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
+              className="rounded-full bg-[var(--bg-neutral)] border border-[var(--border-neutral)] px-3 py-1.5 hover:bg-[var(--bg-neutral-hover)] transition-colors cursor-pointer"
             >
               Force Publish
             </button>
             <button
               type="button"
               onClick={() => handleBulkPublish(false)}
-              className="rounded-full bg-[var(--bg-elevated)] border border-[var(--border-neutral)] px-3 py-1.5 hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
+              className="rounded-full bg-[var(--bg-neutral)] border border-[var(--border-neutral)] px-3 py-1.5 hover:bg-[var(--bg-neutral-hover)] transition-colors cursor-pointer"
             >
               Force Unpublish
             </button>
             <button
               type="button"
               onClick={() => handleBulkFeature(true)}
-              className="rounded-full bg-[var(--accent)] text-black px-3 py-1.5 font-bold transition-opacity hover:opacity-90 cursor-pointer shadow-xs"
+              className="rounded-full bg-[var(--chip-bg)] text-[var(--chip-fg)] px-3.5 py-1.5 font-bold transition-opacity hover:opacity-90 cursor-pointer shadow-xs"
             >
               Bulk Feature
             </button>
             <button
               type="button"
               onClick={handleBulkDelete}
-              className="rounded-full bg-rose-500 text-white px-3 py-1.5 font-bold hover:bg-rose-600 transition-colors cursor-pointer shadow-xs"
+              className="rounded-full bg-[var(--bg-neutral)] border border-[var(--border-neutral)] text-[var(--content-primary)] px-3 py-1.5 font-bold hover:bg-[var(--bg-neutral-hover)] transition-colors cursor-pointer"
             >
-              Permanent Delete
+              Delete Selected
             </button>
           </div>
         </div>
@@ -223,7 +223,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                       className={cn(
                         "group transition-colors hover:bg-[var(--bg-neutral)]/40",
                         isSelected && "bg-[var(--accent)]/5",
-                        isFlagged && "bg-rose-500/5 border-l-2 border-l-rose-500"
+                        isFlagged && "bg-amber-500/5 border-l-2 border-l-amber-500"
                       )}
                     >
                       {/* Selection Checkbox */}
@@ -260,7 +260,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                             <div className="font-bold text-[var(--content-primary)] truncate max-w-[200px] sm:max-w-xs flex items-center gap-1.5">
                               <span>{project.title}</span>
                               {isFlagged && (
-                                <span className="rounded bg-rose-500 text-white px-1.5 py-0.2 text-[8px] font-mono font-bold uppercase">
+                                <span className="rounded bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.2 text-[8px] font-mono font-bold uppercase">
                                   Flagged
                                 </span>
                               )}
@@ -349,12 +349,12 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                       {/* Engagement Metrics */}
                       <td className="py-3.5 px-4 text-center">
                         <div className="inline-flex items-center gap-3 font-mono text-[11px] text-[var(--content-secondary)] font-semibold">
-                          <span className="flex items-center gap-1 text-rose-500">
-                            <Heart className="h-3 w-3 fill-current" />
+                          <span className="flex items-center gap-1 text-[var(--content-primary)]">
+                            <Heart className="h-3 w-3 fill-current text-[var(--content-tertiary)]" />
                             {project.appreciations || 0}
                           </span>
-                          <span className="flex items-center gap-1 text-amber-500">
-                            <MessageSquare className="h-3 w-3" />
+                          <span className="flex items-center gap-1 text-[var(--content-secondary)]">
+                            <MessageSquare className="h-3 w-3 text-[var(--content-tertiary)]" />
                             {project.comments?.length || 0}
                           </span>
                         </div>
@@ -370,8 +370,8 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                             className={cn(
                               "flex h-7 w-7 items-center justify-center rounded-lg border transition-colors cursor-pointer",
                               isFlagged
-                                ? "bg-rose-500 text-white border-rose-500"
-                                : "border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-rose-500 hover:bg-[var(--bg-neutral)]"
+                                ? "bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400"
+                                : "border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)]"
                             )}
                             title={isFlagged ? "Super Admin: Unflag Project" : "Super Admin: Flag for Moderation Review"}
                           >
@@ -411,7 +411,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                           <button
                             type="button"
                             onClick={() => setProjectToDelete(project)}
-                            className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                            className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
                             title="Super Admin: Delete Monograph"
                           >
                             <Trash2 className="h-3.5 w-3.5" />

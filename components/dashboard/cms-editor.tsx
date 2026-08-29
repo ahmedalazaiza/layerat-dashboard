@@ -151,7 +151,7 @@ export function CMSEditor({ projects }: CMSEditorProps) {
   return (
     <div className="space-y-6">
       {/* Super Admin CMS Header Banner */}
-      <div className="rounded-[24px] border border-red-500/30 bg-gradient-to-br from-[var(--bg-elevated)] to-red-500/5 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="rounded-[24px] border border-[var(--border-neutral)] bg-gradient-to-br from-[var(--bg-elevated)] via-[var(--bg-elevated)] to-[var(--bg-neutral)] p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--primary-forest-green)] dark:bg-[var(--accent)] text-white dark:text-black font-bold shadow-xs">
             <FileEdit className="h-6 w-6" />
@@ -161,7 +161,7 @@ export function CMSEditor({ projects }: CMSEditorProps) {
               <h2 className="text-base font-bold text-[var(--content-primary)]">
                 Master Platform CMS & Content Administration
               </h2>
-              <span className="rounded bg-red-500 text-white px-2 py-0.2 text-[9px] font-mono uppercase font-extrabold">
+              <span className="rounded bg-[var(--chip-bg)] text-[var(--chip-fg)] px-2 py-0.2 text-[9px] font-mono uppercase font-bold">
                 Super Admin Access
               </span>
             </div>

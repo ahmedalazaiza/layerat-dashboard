@@ -105,7 +105,7 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
                     key={creator.id}
                     className={cn(
                       "group transition-colors hover:bg-[var(--bg-neutral)]/40",
-                      isSuspended && "opacity-60 bg-rose-500/5"
+                      isSuspended && "opacity-60 bg-amber-500/5"
                     )}
                   >
                     {/* User Identity & UID */}
@@ -153,11 +153,11 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
                         className={cn(
                           "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-mono font-bold",
                           isSuspended
-                            ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30"
+                            ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30"
                             : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
                         )}
                       >
-                        <span className={cn("h-1.5 w-1.5 rounded-full", isSuspended ? "bg-rose-500" : "bg-emerald-500")} />
+                        <span className={cn("h-1.5 w-1.5 rounded-full", isSuspended ? "bg-amber-500" : "bg-emerald-500")} />
                         <span>{isSuspended ? "Suspended" : "Active Member"}</span>
                       </span>
                     </td>
@@ -246,8 +246,8 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
                           className={cn(
                             "flex h-7 w-7 items-center justify-center rounded-lg border transition-colors cursor-pointer",
                             isSuspended
-                              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-                              : "border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-red-500 hover:bg-red-500/10"
+                              ? "bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400"
+                              : "border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)]"
                           )}
                           title={isSuspended ? "Super Admin: Unsuspend Account" : "Super Admin: Suspend Account"}
                         >

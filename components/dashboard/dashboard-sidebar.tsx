@@ -126,7 +126,7 @@ export function DashboardSidebar({
           label: "System & Security",
           href: "/dashboard/settings",
           icon: Settings,
-          badge: "Super Admin",
+          badge: "Admin",
         },
       ],
     },
@@ -166,16 +166,16 @@ export function DashboardSidebar({
               isCollapsed && "lg:justify-center lg:w-full"
             )}
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-600 dark:bg-red-500 text-white font-black text-lg shadow-sm">
-              <Shield className="h-5 w-5 fill-current" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--primary-forest-green)] dark:bg-[var(--accent)] text-white dark:text-black font-bold text-lg shadow-xs">
+              <Shield className="h-4.5 w-4.5 fill-current" />
             </div>
             {(!isCollapsed || isMobileOpen) && (
               <div className="flex flex-col">
                 <span className={cn(bricolage.className, "text-base font-bold tracking-tight text-[var(--content-primary)] leading-none")}>
-                  Layerat<span className="text-red-500 font-black">.</span>
+                  Layerat<span className="text-[var(--accent)] font-black">.</span>
                 </span>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <span className="rounded bg-red-500/15 border border-red-500/30 px-1.5 py-0.2 text-[9px] font-mono uppercase tracking-wider font-extrabold text-red-600 dark:text-red-400">
+                  <span className="rounded bg-[var(--bg-neutral)] border border-[var(--border-neutral)] px-1.5 py-0.2 text-[9px] font-mono uppercase tracking-wider font-bold text-[var(--content-secondary)]">
                     SUPER ADMIN
                   </span>
                 </div>
@@ -196,14 +196,14 @@ export function DashboardSidebar({
 
         {/* Super Admin Status Indicator Pill */}
         {(!isCollapsed || isMobileOpen) && (
-          <div className="mx-3 mt-3 rounded-[14px] bg-red-500/10 border border-red-500/20 px-3 py-2 flex items-center justify-between">
+          <div className="mx-3 mt-3 rounded-[14px] bg-[var(--bg-elevated)] border border-[var(--border-neutral)] px-3 py-2 flex items-center justify-between shadow-2xs">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-[11px] font-mono font-bold text-red-600 dark:text-red-400">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[11px] font-mono font-bold text-[var(--content-primary)]">
                 Root Access Active
               </span>
             </div>
-            <Lock className="h-3 w-3 text-red-500" />
+            <Lock className="h-3 w-3 text-[var(--content-tertiary)]" />
           </div>
         )}
 
@@ -318,7 +318,7 @@ export function DashboardSidebar({
                 isCollapsed && "lg:justify-center"
               )}
             >
-              <div className="relative h-8 w-8 rounded-full overflow-hidden ring-2 ring-red-500/50 shrink-0">
+              <div className="relative h-8 w-8 rounded-full overflow-hidden ring-1 ring-[var(--border-neutral)] shrink-0">
                 <Image
                   src={getValidAvatarUrl(user?.avatarUrl)}
                   alt={user?.displayName || "Super Admin"}
@@ -336,7 +336,7 @@ export function DashboardSidebar({
                     </span>
                     <VerifiedBadge size="sm" />
                   </div>
-                  <div className="text-[10px] font-mono text-red-500 font-bold truncate">
+                  <div className="text-[10px] font-mono text-[var(--content-tertiary)] truncate">
                     @root_superadmin
                   </div>
                 </div>
@@ -348,7 +348,7 @@ export function DashboardSidebar({
               <button
                 type="button"
                 onClick={handleLogout}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-[var(--content-tertiary)] hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer shrink-0"
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer shrink-0"
                 title="Sign out of Super Admin"
               >
                 <LogOut className="h-4 w-4" />

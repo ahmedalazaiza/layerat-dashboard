@@ -9,6 +9,7 @@ import { useTheme, Theme } from "./theme-provider";
 import {
   User,
   Settings,
+  LayoutDashboard,
   Sun,
   Moon,
   Laptop,
@@ -134,6 +135,20 @@ export function ProfileDropdown() {
 
             {/* Navigation Options */}
             <div className="p-1.5 space-y-0.5">
+              <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-between gap-2.5 rounded-[12px] px-3 py-2 text-xs font-bold text-[var(--content-primary)] bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <LayoutDashboard className="h-4 w-4 text-[var(--accent)]" />
+                  <span>Studio Dashboard</span>
+                </div>
+                <span className="rounded-full bg-[var(--accent)] text-black px-1.5 py-0.2 text-[9px] font-mono font-bold">
+                  Hub
+                </span>
+              </Link>
+
               <Link
                 href={`/u/${user.username}`}
                 onClick={() => setIsOpen(false)}

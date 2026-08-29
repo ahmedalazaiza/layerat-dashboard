@@ -16,7 +16,10 @@ import {
   Moon,
   ExternalLink,
   ChevronRight,
+  Shield,
   Home,
+  ShieldAlert,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
 import { NotificationsPopover } from "@/components/layout/notifications-popover";
@@ -37,16 +40,16 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
 
   // Generate readable title from pathname
   const getPageMeta = () => {
-    if (pathname === "/dashboard") return { title: "Studio Overview & Metrics", section: "Hub" };
-    if (pathname.startsWith("/dashboard/projects")) return { title: "Projects & Case Studies", section: "Management" };
-    if (pathname.startsWith("/dashboard/creators")) return { title: "Creators & Studios Directory", section: "Community" };
-    if (pathname.startsWith("/dashboard/comments")) return { title: "Critiques & Discussions Moderation", section: "Content" };
-    if (pathname.startsWith("/dashboard/taxonomy")) return { title: "Master Taxonomy & Disciplines", section: "Taxonomy" };
-    if (pathname.startsWith("/dashboard/media")) return { title: "Media & Storage Vault", section: "Assets" };
-    if (pathname.startsWith("/dashboard/ai-lab")) return { title: "AI Creative Director Studio", section: "Intelligence" };
-    if (pathname.startsWith("/dashboard/notifications")) return { title: "Announcements & Broadcasts", section: "Dispatch" };
-    if (pathname.startsWith("/dashboard/settings")) return { title: "Platform Settings & System Backup", section: "System" };
-    return { title: "Dashboard", section: "Overview" };
+    if (pathname === "/dashboard") return { title: "Super Admin Command Center", section: "Platform Hub" };
+    if (pathname.startsWith("/dashboard/projects")) return { title: "Platform Monographs & Content Moderation", section: "Projects" };
+    if (pathname.startsWith("/dashboard/creators")) return { title: "User & Studio Accounts Management", section: "Community" };
+    if (pathname.startsWith("/dashboard/comments")) return { title: "Critiques & Discussion Stream Moderation", section: "Moderation" };
+    if (pathname.startsWith("/dashboard/taxonomy")) return { title: "Master Taxonomy & 13 Disciplines CRUD", section: "Taxonomy" };
+    if (pathname.startsWith("/dashboard/media")) return { title: "Storage Buckets & Infrastructure Vault", section: "Storage" };
+    if (pathname.startsWith("/dashboard/ai-lab")) return { title: "AI Creative Director Engine & Diagnostics", section: "Intelligence" };
+    if (pathname.startsWith("/dashboard/notifications")) return { title: "Global Announcements & Push Dispatcher", section: "Broadcasts" };
+    if (pathname.startsWith("/dashboard/settings")) return { title: "Super Admin Security & System Backup", section: "Security" };
+    return { title: "Super Admin Console", section: "System" };
   };
 
   const meta = getPageMeta();
@@ -64,7 +67,7 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-[var(--border-neutral)] bg-[var(--bg-screen)]/90 backdrop-blur-md px-4 sm:px-6">
-        {/* Left: Mobile Toggle & Breadcrumbs / Title */}
+        {/* Left: Mobile Toggle & Super Admin Breadcrumbs */}
         <div className="flex items-center gap-3">
           {/* Mobile Menu Button */}
           <button
@@ -80,10 +83,10 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
           <div className="flex items-center gap-2">
             <Link
               href="/dashboard"
-              className="text-[var(--content-tertiary)] hover:text-[var(--content-primary)] transition-colors text-xs font-semibold flex items-center gap-1"
+              className="text-[var(--content-tertiary)] hover:text-[var(--content-primary)] transition-colors text-xs font-semibold flex items-center gap-1.5"
             >
-              <Home className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Studio</span>
+              <Shield className="h-3.5 w-3.5 text-red-500 fill-current" />
+              <span className="hidden sm:inline font-bold">Admin Console</span>
             </Link>
             <ChevronRight className="h-3 w-3 text-[var(--content-tertiary)]" />
             <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--content-tertiary)] hidden md:inline">
@@ -98,6 +101,12 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
 
         {/* Right: Quick Action Controls */}
         <div className="flex items-center gap-2">
+          {/* Super Admin Status Tag */}
+          <span className="hidden xl:inline-flex items-center gap-1.5 rounded-full bg-red-500/10 border border-red-500/20 px-3 py-1 text-[11px] font-mono font-extrabold text-red-600 dark:text-red-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping" />
+            <span>Root Admin Role</span>
+          </span>
+
           {/* Command Bar Trigger Button */}
           <button
             type="button"
@@ -106,7 +115,7 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
             title="Open Command Menu (Cmd+K)"
           >
             <Search className="h-3.5 w-3.5 text-[var(--content-tertiary)]" />
-            <span>Search or command...</span>
+            <span>Command palette...</span>
             <kbd className="rounded bg-[var(--bg-elevated)] border border-[var(--border-neutral)] px-1.5 py-0.5 text-[10px] font-mono text-[var(--content-tertiary)]">
               ⌘K
             </kbd>
@@ -118,7 +127,7 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
             onClick={handleRefresh}
             disabled={isRefreshing || isLoadingDb}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-secondary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-all cursor-pointer disabled:opacity-50"
-            title="Purge cache & refresh live data"
+            title="Purge Supabase in-memory cache & reload live data"
           >
             <RefreshCw
               className={cn("h-4 w-4", (isRefreshing || isLoadingDb) && "animate-spin text-[var(--accent)]")}
@@ -138,13 +147,13 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
           {/* Notifications Popover */}
           <NotificationsPopover />
 
-          {/* Create Project CTA Button */}
+          {/* Create Monograph CTA Button */}
           <Link
             href="/me/projects/new"
             className="hidden md:flex items-center gap-1.5 rounded-full bg-[var(--primary-forest-green)] dark:bg-[var(--accent)] px-3.5 py-1.5 text-xs font-bold text-white dark:text-[var(--primary-forest-green)] hover:opacity-90 active:scale-95 transition-all shadow-xs"
           >
             <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-            <span>New Case Study</span>
+            <span>Publish Monograph</span>
           </Link>
         </div>
       </header>

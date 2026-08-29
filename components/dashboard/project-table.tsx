@@ -19,6 +19,9 @@ import {
   MoreVertical,
   Check,
   FileText,
+  Shield,
+  ShieldAlert,
+  Flag,
 } from "lucide-react";
 import { getValidAvatarUrl } from "@/lib/avatar";
 import { DeleteProjectModal } from "@/components/project/delete-project-modal";
@@ -38,6 +41,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [lightboxImages, setLightboxImages] = useState<{ url: string; alt: string }[]>([]);
+  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
 
   // Bulk Selection Toggles
   const handleSelectAll = () => {
@@ -58,7 +62,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
     setSelectedIds(next);
   };
 
-  // Toggle Featured status
+  // Super Admin: Toggle Featured status
   const handleToggleFeatured = async (project: Project, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
@@ -71,7 +75,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
     }
   };
 
-  // Toggle Published status
+  // Super Admin: Toggle Published status
   const handleTogglePublished = async (project: Project, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
@@ -84,7 +88,18 @@ export function ProjectTable({ projects }: ProjectTableProps) {
     }
   };
 
-  // Bulk Actions
+  // Super Admin: Toggle Flag for Review
+  const handleToggleFlag = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFlaggedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // Super Admin: Bulk Actions
   const handleBulkPublish = async (publish: boolean) => {
     for (const id of Array.from(selectedIds)) {
       const p = projects.find((item) => item.id === id);
@@ -95,8 +110,18 @@ export function ProjectTable({ projects }: ProjectTableProps) {
     setSelectedIds(new Set());
   };
 
+  const handleBulkFeature = async (feature: boolean) => {
+    for (const id of Array.from(selectedIds)) {
+      const p = projects.find((item) => item.id === id);
+      if (p) {
+        await saveProject({ ...p, featured: feature });
+      }
+    }
+    setSelectedIds(new Set());
+  };
+
   const handleBulkDelete = async () => {
-    if (confirm(`Are you sure you want to delete ${selectedIds.size} selected projects?`)) {
+    if (confirm(`Super Admin: Are you sure you want to permanently delete ${selectedIds.size} selected monographs?`)) {
       for (const id of Array.from(selectedIds)) {
         await deleteProject(id);
       }
@@ -111,37 +136,44 @@ export function ProjectTable({ projects }: ProjectTableProps) {
 
   return (
     <div className="space-y-4">
-      {/* Bulk Action Bar (Visible when items selected) */}
+      {/* Super Admin Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center justify-between rounded-[18px] border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-4 py-3 text-xs font-semibold">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs font-semibold">
           <div className="flex items-center gap-2 text-[var(--content-primary)]">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--accent)] text-black font-bold font-mono text-[10px]">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white font-bold font-mono text-[10px]">
               {selectedIds.size}
             </span>
-            <span>projects selected</span>
+            <span className="font-bold">Monographs selected for Super Admin action:</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
               onClick={() => handleBulkPublish(true)}
               className="rounded-full bg-[var(--bg-elevated)] border border-[var(--border-neutral)] px-3 py-1.5 hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
             >
-              Publish Selected
+              Force Publish
             </button>
             <button
               type="button"
               onClick={() => handleBulkPublish(false)}
               className="rounded-full bg-[var(--bg-elevated)] border border-[var(--border-neutral)] px-3 py-1.5 hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
             >
-              Unpublish Selected
+              Force Unpublish
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBulkFeature(true)}
+              className="rounded-full bg-[var(--accent)] text-black px-3 py-1.5 font-bold transition-opacity hover:opacity-90 cursor-pointer shadow-xs"
+            >
+              Bulk Feature
             </button>
             <button
               type="button"
               onClick={handleBulkDelete}
-              className="rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 px-3 py-1.5 hover:bg-rose-500/20 transition-colors cursor-pointer"
+              className="rounded-full bg-rose-500 text-white px-3 py-1.5 font-bold hover:bg-rose-600 transition-colors cursor-pointer shadow-xs"
             >
-              Delete Selected
+              Permanent Delete
             </button>
           </div>
         </div>
@@ -151,7 +183,6 @@ export function ProjectTable({ projects }: ProjectTableProps) {
       <div className="overflow-hidden rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
-            {/* Table Header */}
             <thead>
               <tr className="border-b border-[var(--border-neutral)] bg-[var(--bg-neutral)]/50 text-[10px] font-mono uppercase tracking-wider text-[var(--content-tertiary)]">
                 <th className="py-3.5 px-4 w-10 text-center">
@@ -162,27 +193,28 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                     className="rounded border-[var(--border-neutral)] text-[var(--accent)] focus:ring-[var(--accent)] cursor-pointer"
                   />
                 </th>
-                <th className="py-3.5 px-4">Monograph Details</th>
+                <th className="py-3.5 px-4">Platform Monograph</th>
+                <th className="py-3.5 px-4">Creator / Studio</th>
                 <th className="py-3.5 px-4">Discipline</th>
                 <th className="py-3.5 px-4">Medium</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-center">Featured</th>
-                <th className="py-3.5 px-4 text-center">Metrics</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4">Publication Status</th>
+                <th className="py-3.5 px-4 text-center">Featured Spotlight</th>
+                <th className="py-3.5 px-4 text-center">Engagement</th>
+                <th className="py-3.5 px-4 text-right">Super Admin Actions</th>
               </tr>
             </thead>
 
-            {/* Table Body */}
             <tbody className="divide-y divide-[var(--border-neutral)]/60">
               {projects.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-xs text-[var(--content-tertiary)]">
-                    No projects found matching current filters.
+                  <td colSpan={9} className="py-12 text-center text-xs text-[var(--content-tertiary)]">
+                    No platform monographs found matching criteria.
                   </td>
                 </tr>
               ) : (
                 projects.map((project) => {
                   const isSelected = selectedIds.has(project.id);
+                  const isFlagged = flaggedIds.has(project.id);
                   const gallery = project.galleryImages?.length > 0 ? project.galleryImages : [project.coverImage];
 
                   return (
@@ -190,7 +222,8 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                       key={project.id}
                       className={cn(
                         "group transition-colors hover:bg-[var(--bg-neutral)]/40",
-                        isSelected && "bg-[var(--accent)]/5"
+                        isSelected && "bg-[var(--accent)]/5",
+                        isFlagged && "bg-rose-500/5 border-l-2 border-l-rose-500"
                       )}
                     >
                       {/* Selection Checkbox */}
@@ -203,14 +236,13 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                         />
                       </td>
 
-                      {/* Thumbnail & Monograph Title */}
+                      {/* Monograph Title & Thumbnail */}
                       <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-3.5 min-w-[240px]">
-                          {/* Thumbnail with Lightbox button */}
+                        <div className="flex items-center gap-3.5 min-w-[220px]">
                           <div
                             onClick={() => openLightbox(gallery, 0)}
                             className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-[var(--bg-neutral)] border border-[var(--border-neutral)] cursor-pointer group/thumb"
-                            title="Click to view full image"
+                            title="Click to view full image in lightbox"
                           >
                             <Image
                               src={project.coverImage || "/placeholder.jpg"}
@@ -224,10 +256,14 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                             </div>
                           </div>
 
-                          {/* Titles */}
                           <div className="min-w-0">
-                            <div className="font-bold text-[var(--content-primary)] truncate max-w-[220px] sm:max-w-xs">
-                              {project.title}
+                            <div className="font-bold text-[var(--content-primary)] truncate max-w-[200px] sm:max-w-xs flex items-center gap-1.5">
+                              <span>{project.title}</span>
+                              {isFlagged && (
+                                <span className="rounded bg-rose-500 text-white px-1.5 py-0.2 text-[8px] font-mono font-bold uppercase">
+                                  Flagged
+                                </span>
+                              )}
                             </div>
                             <div className="flex items-center gap-2 text-[10px] text-[var(--content-tertiary)] font-mono mt-0.5">
                               <span className="truncate">/{project.slug}</span>
@@ -238,9 +274,27 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                         </div>
                       </td>
 
+                      {/* Creator Info */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2 min-w-[130px]">
+                          <div className="relative h-5 w-5 rounded-full overflow-hidden shrink-0 ring-1 ring-[var(--border-neutral)]">
+                            <Image
+                              src={getValidAvatarUrl(project.creator?.avatarUrl)}
+                              alt={project.creator?.displayName || "Studio"}
+                              fill
+                              sizes="20px"
+                              className="object-cover"
+                            />
+                          </div>
+                          <span className="font-semibold text-[var(--content-primary)] truncate max-w-[110px]">
+                            {project.creator?.displayName || "Studio"}
+                          </span>
+                        </div>
+                      </td>
+
                       {/* Discipline */}
                       <td className="py-3.5 px-4">
-                        <span className="inline-block rounded-full bg-[var(--bg-neutral)] border border-[var(--border-neutral)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--content-primary)] max-w-[160px] truncate">
+                        <span className="inline-block rounded-full bg-[var(--bg-neutral)] border border-[var(--border-neutral)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--content-primary)] max-w-[140px] truncate">
                           {project.category}
                         </span>
                       </td>
@@ -263,7 +317,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
                               : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30"
                           )}
-                          title="Click to toggle publish status"
+                          title="Super Admin: Toggle publication state"
                         >
                           <span
                             className={cn(
@@ -271,7 +325,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                               project.published !== false ? "bg-emerald-500" : "bg-amber-500"
                             )}
                           />
-                          <span>{project.published !== false ? "Live" : "Draft"}</span>
+                          <span>{project.published !== false ? "Live Showcase" : "Draft"}</span>
                         </button>
                       </td>
 
@@ -283,10 +337,10 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                           className={cn(
                             "h-7 w-7 rounded-lg inline-flex items-center justify-center transition-colors cursor-pointer",
                             project.featured
-                              ? "text-amber-500 bg-amber-500/10"
+                              ? "text-amber-500 bg-amber-500/10 shadow-2xs"
                               : "text-[var(--content-tertiary)] hover:text-amber-500 hover:bg-[var(--bg-neutral)]"
                           )}
-                          title={project.featured ? "Remove featured" : "Feature on staff picks"}
+                          title={project.featured ? "Super Admin: Remove Staff Pick" : "Super Admin: Feature on Staff Picks"}
                         >
                           <Star className={cn("h-4 w-4", project.featured && "fill-current")} />
                         </button>
@@ -306,15 +360,30 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                         </div>
                       </td>
 
-                      {/* Actions */}
+                      {/* Super Admin Actions */}
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* Flag for Review */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleToggleFlag(project.id, e)}
+                            className={cn(
+                              "flex h-7 w-7 items-center justify-center rounded-lg border transition-colors cursor-pointer",
+                              isFlagged
+                                ? "bg-rose-500 text-white border-rose-500"
+                                : "border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-rose-500 hover:bg-[var(--bg-neutral)]"
+                            )}
+                            title={isFlagged ? "Super Admin: Unflag Project" : "Super Admin: Flag for Moderation Review"}
+                          >
+                            <Flag className="h-3.5 w-3.5" />
+                          </button>
+
                           {/* Quick Edit Drawer Trigger */}
                           <button
                             type="button"
                             onClick={() => setEditingProject(project)}
                             className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-secondary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
-                            title="Quick edit metadata"
+                            title="Super Admin: Quick Edit Metadata"
                           >
                             <Edit3 className="h-3.5 w-3.5" />
                           </button>
@@ -323,7 +392,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                           <Link
                             href={`/me/projects/${project.id}`}
                             className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-secondary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
-                            title="Open full editor"
+                            title="Super Admin: Full Project Editor"
                           >
                             <FileText className="h-3.5 w-3.5" />
                           </Link>
@@ -333,7 +402,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                             href={`/project/${project.slug}`}
                             target="_blank"
                             className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-secondary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
-                            title="Open live page in new tab"
+                            title="View Live Monograph"
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
                           </Link>
@@ -342,8 +411,8 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                           <button
                             type="button"
                             onClick={() => setProjectToDelete(project)}
-                            className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-secondary)] hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                            title="Delete project"
+                            className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                            title="Super Admin: Delete Monograph"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>

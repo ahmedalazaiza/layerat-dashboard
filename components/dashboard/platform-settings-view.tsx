@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useSession } from "@/lib/session-context";
-import { useTheme, Theme } from "@/components/layout/theme-provider";
+import { useTheme } from "@/components/layout/theme-provider";
 import { invalidateAppCache } from "@/lib/supabase/queries";
 import {
   Settings,
@@ -11,6 +11,8 @@ import {
   Download,
   CheckCircle2,
   ShieldCheck,
+  ShieldAlert,
+  Shield,
   Moon,
   Sun,
   Laptop,
@@ -21,6 +23,10 @@ import {
   Check,
   AlertTriangle,
   Loader2,
+  Lock,
+  Radio,
+  Server,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,9 +34,12 @@ export function PlatformSettingsView() {
   const { user, projects, creators, refreshFromDb } = useSession();
   const { theme, resolvedTheme, setTheme } = useTheme();
 
-  const [studioName, setStudioName] = useState("Layerat Creative Collective");
-  const [studioEmail, setStudioEmail] = useState("studio@layerat.com");
-  const [canonicalUrl, setCanonicalUrl] = useState("https://layerat.com");
+  const [platformName, setPlatformName] = useState("Layerat — Master Platform");
+  const [editorialEmail, setEditorialEmail] = useState("editorial@layerat.com");
+  const [canonicalDomain, setCanonicalDomain] = useState("https://layerat.com");
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+  const [allowPublicRegistrations, setAllowPublicRegistrations] = useState(true);
+  const [requireManualVerification, setRequireManualVerification] = useState(true);
   const [isPurgingCache, setIsPurgingCache] = useState(false);
   const [cachePurgedSuccess, setCachePurgedSuccess] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -52,20 +61,32 @@ export function PlatformSettingsView() {
     let filename = "layerat-export.json";
 
     if (type === "projects") {
-      exportData = { exportDate: new Date().toISOString(), total: projects.length, projects };
-      filename = `layerat-projects-${new Date().toISOString().slice(0, 10)}.json`;
+      exportData = {
+        exportDate: new Date().toISOString(),
+        exportedBy: "Super Admin Root",
+        total: projects.length,
+        projects,
+      };
+      filename = `layerat-projects-master-${new Date().toISOString().slice(0, 10)}.json`;
     } else if (type === "creators") {
-      exportData = { exportDate: new Date().toISOString(), total: creators.length, creators };
-      filename = `layerat-creators-${new Date().toISOString().slice(0, 10)}.json`;
+      exportData = {
+        exportDate: new Date().toISOString(),
+        exportedBy: "Super Admin Root",
+        total: creators.length,
+        creators,
+      };
+      filename = `layerat-users-master-${new Date().toISOString().slice(0, 10)}.json`;
     } else {
       exportData = {
         exportDate: new Date().toISOString(),
+        system: "Layerat Platform Master Database Backup",
+        exportedBy: "Super Admin Root",
         projectsCount: projects.length,
         creatorsCount: creators.length,
         projects,
         creators,
       };
-      filename = `layerat-full-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      filename = `layerat-full-backup-master-${new Date().toISOString().slice(0, 10)}.json`;
     }
 
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
@@ -95,7 +116,7 @@ export function PlatformSettingsView() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `layerat-monographs-${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `layerat-monographs-master-${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -103,16 +124,67 @@ export function PlatformSettingsView() {
 
   return (
     <div className="space-y-6">
+      {/* Super Admin Status Banner */}
+      <div className="rounded-[24px] border border-red-500/30 bg-red-500/5 p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white font-bold">
+            <Shield className="h-5 w-5 fill-current" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-[var(--content-primary)]">
+                Super Admin Master Governance & Security Controls
+              </h2>
+              <span className="rounded bg-red-500 text-white px-2 py-0.2 text-[9px] font-mono uppercase font-extrabold">
+                Root Level
+              </span>
+            </div>
+            <p className="text-xs text-[var(--content-secondary)] mt-0.5">
+              Elevated credentials active. All changes apply globally to the production database and public showcase.
+            </p>
+          </div>
+        </div>
+
+        {/* Maintenance Mode Toggle Switch */}
+        <div className="flex items-center gap-3 bg-[var(--bg-elevated)] p-2.5 rounded-[16px] border border-[var(--border-neutral)] shrink-0">
+          <div>
+            <div className="text-xs font-bold text-[var(--content-primary)] flex items-center gap-1.5">
+              <Lock className="h-3.5 w-3.5 text-amber-500" />
+              <span>Maintenance Mode</span>
+            </div>
+            <div className="text-[10px] text-[var(--content-tertiary)]">
+              {isMaintenanceMode ? "Platform in read-only lock" : "Platform live to public"}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsMaintenanceMode(!isMaintenanceMode)}
+            className={cn(
+              "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+              isMaintenanceMode ? "bg-amber-500" : "bg-[var(--bg-neutral)]"
+            )}
+          >
+            <span
+              className={cn(
+                "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                isMaintenanceMode ? "translate-x-5" : "translate-x-0"
+              )}
+            />
+          </button>
+        </div>
+      </div>
+
       {/* 2-Column Settings Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column: Platform Branding & Interface Defaults */}
+        {/* Left Column: Platform Branding & Registration Policies */}
         <div className="space-y-6">
-          {/* General Platform Branding Card */}
+          {/* General Platform Settings Card */}
           <div className="rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-6 shadow-xs space-y-4">
             <div className="flex items-center gap-2 border-b border-[var(--border-neutral)]/60 pb-3">
               <Settings className="h-4 w-4 text-[var(--accent)]" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--content-primary)]">
-                General Studio & Platform Identity
+                Global Platform Identity & Domains
               </h3>
             </div>
 
@@ -123,20 +195,20 @@ export function PlatformSettingsView() {
                 </label>
                 <input
                   type="text"
-                  value={studioName}
-                  onChange={(e) => setStudioName(e.target.value)}
+                  value={platformName}
+                  onChange={(e) => setPlatformName(e.target.value)}
                   className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3.5 py-2 text-xs font-medium text-[var(--content-primary)] focus:border-[var(--content-primary)] focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Editorial Contact Email
+                  Super Admin / Editorial Email
                 </label>
                 <input
                   type="email"
-                  value={studioEmail}
-                  onChange={(e) => setStudioEmail(e.target.value)}
+                  value={editorialEmail}
+                  onChange={(e) => setEditorialEmail(e.target.value)}
                   className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3.5 py-2 text-xs font-medium text-[var(--content-primary)] focus:border-[var(--content-primary)] focus:outline-none"
                 />
               </div>
@@ -147,10 +219,57 @@ export function PlatformSettingsView() {
                 </label>
                 <input
                   type="url"
-                  value={canonicalUrl}
-                  onChange={(e) => setCanonicalUrl(e.target.value)}
+                  value={canonicalDomain}
+                  onChange={(e) => setCanonicalDomain(e.target.value)}
                   className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3.5 py-2 text-xs font-medium text-[var(--content-primary)] focus:border-[var(--content-primary)] focus:outline-none"
                 />
+              </div>
+
+              {/* Toggles */}
+              <div className="space-y-2.5 pt-2 border-t border-[var(--border-neutral)]/60">
+                <div className="flex items-center justify-between text-xs">
+                  <div>
+                    <div className="font-semibold text-[var(--content-primary)]">Public Creator Signups</div>
+                    <div className="text-[10px] text-[var(--content-tertiary)]">Allow new studio registrations</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAllowPublicRegistrations(!allowPublicRegistrations)}
+                    className={cn(
+                      "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
+                      allowPublicRegistrations ? "bg-emerald-500" : "bg-[var(--bg-neutral)]"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "inline-block h-4 w-4 transform rounded-full bg-white shadow transition",
+                        allowPublicRegistrations ? "translate-x-4" : "translate-x-0"
+                      )}
+                    />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <div>
+                    <div className="font-semibold text-[var(--content-primary)]">Strict Studio Verification</div>
+                    <div className="text-[10px] text-[var(--content-tertiary)]">Require Super Admin badge approval</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRequireManualVerification(!requireManualVerification)}
+                    className={cn(
+                      "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
+                      requireManualVerification ? "bg-emerald-500" : "bg-[var(--bg-neutral)]"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "inline-block h-4 w-4 transform rounded-full bg-white shadow transition",
+                        requireManualVerification ? "translate-x-4" : "translate-x-0"
+                      )}
+                    />
+                  </button>
+                </div>
               </div>
 
               <div className="pt-2">
@@ -165,12 +284,12 @@ export function PlatformSettingsView() {
                   {isSaved ? (
                     <>
                       <Check className="h-3.5 w-3.5" />
-                      <span>Preferences Saved</span>
+                      <span>Configuration Saved</span>
                     </>
                   ) : (
                     <>
                       <Save className="h-3.5 w-3.5" />
-                      <span>Save Studio Configuration</span>
+                      <span>Save Platform Settings</span>
                     </>
                   )}
                 </button>
@@ -178,47 +297,41 @@ export function PlatformSettingsView() {
             </div>
           </div>
 
-          {/* Interface & Theme Selection Card */}
+          {/* Theme & Appearance Card */}
           <div className="rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-6 shadow-xs space-y-4">
             <div className="flex items-center gap-2 border-b border-[var(--border-neutral)]/60 pb-3">
               <Palette className="h-4 w-4 text-[var(--accent)]" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--content-primary)]">
-                Appearance & Theme Architecture
+                Default Platform Theme
               </h3>
             </div>
 
-            <div className="space-y-3">
-              <div className="text-xs text-[var(--content-secondary)]">
-                Active Theme: <span className="font-bold uppercase text-[var(--content-primary)]">{theme} ({resolvedTheme})</span>
-              </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: "light", label: "Light", icon: Sun },
+                { value: "dark", label: "Dark Obsidian", icon: Moon },
+                { value: "system", label: "System Sync", icon: Laptop },
+              ].map((opt) => {
+                const Icon = opt.icon;
+                const isSelected = theme === opt.value;
 
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { value: "light", label: "Light", icon: Sun },
-                  { value: "dark", label: "Dark Obsidian", icon: Moon },
-                  { value: "system", label: "System Sync", icon: Laptop },
-                ].map((opt) => {
-                  const Icon = opt.icon;
-                  const isSelected = theme === opt.value;
-
-                  return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setTheme(opt.value as any)}
-                      className={cn(
-                        "flex flex-col items-center justify-center gap-2 p-3 rounded-[14px] border text-xs font-bold transition-all cursor-pointer",
-                        isSelected
-                          ? "bg-[var(--chip-bg)] text-[var(--chip-fg)] border-transparent shadow-xs"
-                          : "border-[var(--border-neutral)] bg-[var(--bg-neutral)] text-[var(--content-secondary)] hover:text-[var(--content-primary)]"
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span>{opt.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setTheme(opt.value as any)}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-2 p-3 rounded-[14px] border text-xs font-bold transition-all cursor-pointer",
+                      isSelected
+                        ? "bg-[var(--chip-bg)] text-[var(--chip-fg)] border-transparent shadow-xs"
+                        : "border-[var(--border-neutral)] bg-[var(--bg-neutral)] text-[var(--content-secondary)] hover:text-[var(--content-primary)]"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{opt.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -231,12 +344,12 @@ export function PlatformSettingsView() {
               <div className="flex items-center gap-2">
                 <Database className="h-4 w-4 text-[var(--accent)]" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--content-primary)]">
-                  Supabase & Memory Cache Control
+                  Supabase Database & Cache Control
                 </h3>
               </div>
               <span className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-mono font-bold flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
-                <span>Live Supabase</span>
+                <span>Connected</span>
               </span>
             </div>
 
@@ -269,7 +382,7 @@ export function PlatformSettingsView() {
                   <ShieldCheck className="h-4 w-4 text-emerald-500" />
                   <span className="font-semibold text-[var(--content-primary)]">PostgreSQL Row-Level Security</span>
                 </div>
-                <span className="font-mono text-[10px] text-[var(--content-tertiary)]">Enforced</span>
+                <span className="font-mono text-[10px] text-emerald-500 font-bold">100% Enforced</span>
               </div>
             </div>
           </div>
@@ -279,12 +392,12 @@ export function PlatformSettingsView() {
             <div className="flex items-center gap-2 border-b border-[var(--border-neutral)]/60 pb-3">
               <Download className="h-4 w-4 text-[var(--accent)]" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--content-primary)]">
-                Platform Data Export & Backup
+                Master Database Backup & Export
               </h3>
             </div>
 
             <p className="text-xs text-[var(--content-secondary)] leading-relaxed">
-              Export complete structured platform archives including all monographs, taxonomy mappings, and creator credentials.
+              Super Admin exports include full JSON archives of all monographs, creator profiles, and CSV tables.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
@@ -307,7 +420,7 @@ export function PlatformSettingsView() {
               >
                 <div className="flex items-center gap-2">
                   <FileCode className="h-4 w-4 text-emerald-500" />
-                  <span>Creators JSON</span>
+                  <span>Users JSON</span>
                 </div>
                 <span className="text-[10px] font-mono text-[var(--content-tertiary)]">{creators.length} Items</span>
               </button>
@@ -321,7 +434,7 @@ export function PlatformSettingsView() {
                   <Download className="h-4 w-4 text-sky-500" />
                   <span>Monographs CSV</span>
                 </div>
-                <span className="text-[10px] font-mono text-[var(--content-tertiary)]">Table Data</span>
+                <span className="text-[10px] font-mono text-[var(--content-tertiary)]">Table</span>
               </button>
 
               <button
@@ -331,7 +444,7 @@ export function PlatformSettingsView() {
               >
                 <div className="flex items-center gap-2">
                   <HardDrive className="h-4 w-4 text-[var(--accent)]" />
-                  <span>Full Backup Archive</span>
+                  <span>Full Master Backup</span>
                 </div>
                 <span className="text-[10px] font-mono opacity-80">All Records</span>
               </button>

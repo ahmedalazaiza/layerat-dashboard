@@ -44,6 +44,7 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
     if (pathname.startsWith("/dashboard/projects")) return { title: "Platform Monographs & Content Moderation", section: "Projects" };
     if (pathname.startsWith("/dashboard/creators")) return { title: "User & Studio Accounts Management", section: "Community" };
     if (pathname.startsWith("/dashboard/comments")) return { title: "Critiques & Discussion Stream Moderation", section: "Moderation" };
+    if (pathname.startsWith("/dashboard/cms")) return { title: "Master Platform CMS & Content Studio", section: "CMS" };
     if (pathname.startsWith("/dashboard/taxonomy")) return { title: "Master Taxonomy & 13 Disciplines CRUD", section: "Taxonomy" };
     if (pathname.startsWith("/dashboard/media")) return { title: "Storage Buckets & Infrastructure Vault", section: "Storage" };
     if (pathname.startsWith("/dashboard/ai-lab")) return { title: "AI Creative Director Engine & Diagnostics", section: "Intelligence" };

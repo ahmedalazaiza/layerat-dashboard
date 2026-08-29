@@ -31,6 +31,7 @@ import {
   HardDrive,
   Radio,
   Lock,
+  FileEdit,
 } from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
@@ -80,6 +81,12 @@ export function DashboardSidebar({
     {
       label: "Content & Moderation",
       items: [
+        {
+          label: "Site CMS & Content",
+          href: "/dashboard/cms",
+          icon: FileEdit,
+          badge: "Live Editor",
+        },
         {
           label: "Critiques Moderation",
           href: "/dashboard/comments",

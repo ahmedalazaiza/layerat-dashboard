@@ -34,6 +34,7 @@ import {
   SlidersHorizontal,
   CheckCircle2,
   Cpu,
+  FileEdit,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -238,6 +239,12 @@ export default function DashboardOverviewPage() {
             desc: "Verification & roles",
             href: "/dashboard/creators",
             icon: Users,
+          },
+          {
+            label: "Site CMS Studio",
+            desc: "Edit all site content",
+            href: "/dashboard/cms",
+            icon: FileEdit,
           },
           {
             label: "Critiques Queue",

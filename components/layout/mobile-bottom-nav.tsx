@@ -21,6 +21,11 @@ export function MobileBottomNav() {
   const isNewProject = pathname === "/me/projects/new";
   const isMe = pathname.startsWith("/me") && !isNewProject;
 
+  // Hide on all Super Admin Dashboard routes
+  if (pathname.startsWith("/dashboard")) {
+    return null;
+  }
+
   return (
     <div className="fixed bottom-0 inset-x-0 z-50 md:hidden pointer-events-none px-4 pb-safe pb-3 pt-2">
       <nav

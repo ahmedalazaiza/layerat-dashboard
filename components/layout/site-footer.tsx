@@ -2,10 +2,18 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { bricolage } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 
 export function SiteFooter() {
+  const pathname = usePathname();
+
+  // Hide on all Super Admin Dashboard routes
+  if (pathname.startsWith("/dashboard")) {
+    return null;
+  }
+
   return (
     <footer className="w-full border-t border-[var(--border-neutral)] bg-[var(--bg-screen)] pt-12 pb-8 transition-colors">
       <div className="mx-auto max-w-[1580px] px-4 sm:px-6 space-y-12">

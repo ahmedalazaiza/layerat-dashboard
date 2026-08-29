@@ -23,6 +23,7 @@ import {
   RefreshCw,
   X,
   FileText,
+  FileEdit,
   Command,
 } from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
@@ -97,6 +98,13 @@ export function CommandMenu({ isOpen, onClose }: CommandMenuProps) {
       category: "Navigation",
       icon: Users,
       action: () => router.push("/dashboard/creators"),
+    },
+    {
+      id: "cms",
+      label: "Site CMS & Content Studio",
+      category: "Navigation",
+      icon: FileEdit,
+      action: () => router.push("/dashboard/cms"),
     },
     {
       id: "comments",

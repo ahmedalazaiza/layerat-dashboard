@@ -46,6 +46,11 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Completely hide global site header on all Super Admin Dashboard routes
+  if (pathname.startsWith("/dashboard")) {
+    return null;
+  }
+
   return (
     <>
       {/* Top Announcement Banner for Unverified Users */}

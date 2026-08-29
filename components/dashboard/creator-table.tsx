@@ -242,15 +242,6 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
                         >
                           {isSuspended ? <UserCheck className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
                         </button>
-
-                        {/* Public Profile Link */}
-                        <Link
-                          href={`/u/${creator.username}`}
-                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors"
-                          title="Inspect Public Creator Studio Profile"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </Link>
                       </div>
                     </td>
                   </tr>

@@ -284,22 +284,8 @@ export function DashboardSidebar({
           ))}
         </div>
 
-        {/* Footer: Super Admin Profile Card & Site Link */}
-        <div className="border-t border-neutral-200 dark:border-neutral-800 p-3 bg-neutral-50/50 dark:bg-neutral-950 divide-y divide-neutral-200 dark:divide-neutral-800">
-          {/* Quick Exit to Public Site */}
-          <div className="pb-2">
-            <Link
-              href="/"
-              className={cn(
-                "flex items-center gap-2.5 rounded-[10px] px-2.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors",
-                isCollapsed && "lg:justify-center lg:px-0"
-              )}
-              title="Return to Public Platform"
-            >
-              <ExternalLink className="h-3.5 w-3.5 text-neutral-400" />
-              {(!isCollapsed || isMobileOpen) && <span>Public Platform View</span>}
-            </Link>
-          </div>
+        {/* Footer: Super Admin Profile Card */}
+        <div className="border-t border-neutral-200 dark:border-neutral-800 p-3 bg-neutral-50/50 dark:bg-neutral-950">
 
           {/* User Profile Card */}
           <div className="pt-2 flex items-center justify-between gap-2">

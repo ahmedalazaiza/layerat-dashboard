@@ -181,11 +181,10 @@ export function CommentModerationList({ projects }: CommentModerationListProps) 
                         On Monograph:
                       </span>
                       <Link
-                        href={`/project/${comment.project.slug}`}
+                        href="/dashboard/projects"
                         className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-900 dark:text-neutral-100 hover:opacity-75 transition-opacity truncate max-w-xs"
                       >
                         <span>{comment.project.title}</span>
-                        <ExternalLink className="h-3 w-3 text-neutral-400" />
                       </Link>
                     </div>
                   </div>

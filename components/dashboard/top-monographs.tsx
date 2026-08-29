@@ -72,7 +72,7 @@ export function TopMonographs({ projects }: TopMonographsProps) {
 
                 <div className="min-w-0">
                   <Link
-                    href={`/project/${project.slug}`}
+                    href="/dashboard/projects"
                     className="block truncate text-xs font-bold text-neutral-900 dark:text-neutral-100 hover:opacity-75 transition-opacity"
                   >
                     {project.title}

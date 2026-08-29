@@ -274,17 +274,7 @@ export function MediaGrid({ projects, creators }: MediaGridProps) {
                 </div>
 
                 <div className="flex items-center justify-between text-[10px] text-neutral-400 font-mono">
-                  {item.sourceLink ? (
-                    <Link
-                      href={item.sourceLink}
-                      className="hover:text-black dark:hover:text-white truncate max-w-[100px] flex items-center gap-1"
-                    >
-                      <span className="truncate">{item.sourceName}</span>
-                      <ExternalLink className="h-2.5 w-2.5" />
-                    </Link>
-                  ) : (
-                    <span className="truncate">{item.sourceName}</span>
-                  )}
+                  <span className="truncate max-w-[120px]">{item.sourceName}</span>
 
                   {item.category && (
                     <span className="rounded bg-neutral-100 dark:bg-neutral-900 px-1 py-0.2 text-[8px] uppercase">

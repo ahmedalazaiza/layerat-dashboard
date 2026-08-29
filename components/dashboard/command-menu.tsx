@@ -85,10 +85,10 @@ export function CommandMenu({ isOpen, onClose }: CommandMenuProps) {
     },
     {
       id: "new-project",
-      label: "Create New Project",
+      label: "Manage Monographs & New Drafts",
       category: "Actions",
       icon: Plus,
-      action: () => router.push("/me/projects/new"),
+      action: () => router.push("/dashboard/projects"),
     },
     {
       id: "creators",
@@ -181,7 +181,7 @@ export function CommandMenu({ isOpen, onClose }: CommandMenuProps) {
       label: `Monograph: ${p.title}`,
       category: "Projects",
       icon: FileText,
-      action: () => router.push(`/project/${p.slug}`),
+      action: () => router.push(`/dashboard/projects`),
     }));
 
   const filteredItems = search.trim()

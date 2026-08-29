@@ -389,21 +389,12 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                               <Flag className="h-3.5 w-3.5" />
                             </button>
 
-                            {/* Public View Link */}
-                            <Link
-                              href={`/project/${project.slug}`}
-                              className="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors"
-                              title="Inspect Live Monograph View"
-                            >
-                              <ExternalLink className="h-3.5 w-3.5" />
-                            </Link>
-
-                            {/* Quick Edit Drawer Trigger */}
+                            {/* Quick Inspect/Edit */}
                             <button
                               type="button"
                               onClick={() => setEditingProject(project)}
                               className="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors cursor-pointer"
-                              title="Super Admin: Quick Edit Metadata"
+                              title="Inspect & Edit Monograph"
                             >
                               <Edit3 className="h-3.5 w-3.5" />
                             </button>

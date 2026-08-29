@@ -146,13 +146,13 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
           {/* Notifications Popover */}
           <NotificationsPopover />
 
-          {/* Create Monograph CTA Button */}
+          {/* Manage Monographs CTA Button */}
           <Link
-            href="/me/projects/new"
+            href="/dashboard/projects"
             className="hidden md:flex items-center gap-1.5 rounded-full bg-black dark:bg-white px-3.5 py-1.5 text-xs font-bold text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 active:scale-95 transition-all shadow-xs"
           >
             <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-            <span>Publish Monograph</span>
+            <span>Manage Monographs</span>
           </Link>
         </div>
       </header>

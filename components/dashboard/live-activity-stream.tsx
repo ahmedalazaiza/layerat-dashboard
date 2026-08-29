@@ -102,7 +102,7 @@ export function LiveActivityStream({ notifications }: LiveActivityStreamProps) {
                     </span>
                     {notif.project && (
                       <Link
-                        href={`/project/${notif.project.slug}`}
+                        href="/dashboard/projects"
                         className="font-bold text-neutral-900 dark:text-neutral-100 hover:opacity-75 truncate max-w-[150px]"
                       >
                         {notif.project.title}

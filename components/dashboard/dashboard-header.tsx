@@ -49,6 +49,7 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
     if (pathname.startsWith("/dashboard/media")) return { title: "Storage Buckets & Infrastructure Vault", section: "Storage" };
     if (pathname.startsWith("/dashboard/ai-lab")) return { title: "AI Creative Director Engine & Diagnostics", section: "Intelligence" };
     if (pathname.startsWith("/dashboard/notifications")) return { title: "Global Announcements & Push Dispatcher", section: "Broadcasts" };
+    if (pathname.startsWith("/dashboard/roles")) return { title: "Role-Based Access Control & Admin Governance", section: "Governance" };
     if (pathname.startsWith("/dashboard/settings")) return { title: "Super Admin Security & System Backup", section: "Security" };
     return { title: "Super Admin Console", section: "System" };
   };

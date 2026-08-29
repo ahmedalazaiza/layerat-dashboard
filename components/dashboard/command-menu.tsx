@@ -24,6 +24,7 @@ import {
   X,
   FileText,
   FileEdit,
+  Key,
   Command,
 } from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
@@ -140,6 +141,13 @@ export function CommandMenu({ isOpen, onClose }: CommandMenuProps) {
       category: "Navigation",
       icon: Bell,
       action: () => router.push("/dashboard/notifications"),
+    },
+    {
+      id: "roles",
+      label: "Roles & Permissions (RBAC)",
+      category: "Navigation",
+      icon: Key,
+      action: () => router.push("/dashboard/roles"),
     },
     {
       id: "settings",

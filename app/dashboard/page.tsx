@@ -35,6 +35,7 @@ import {
   CheckCircle2,
   Cpu,
   FileEdit,
+  Key,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -256,6 +257,12 @@ export default function DashboardOverviewPage() {
             desc: "13 Disciplines CRUD",
             href: "/dashboard/taxonomy",
             icon: Layers,
+          },
+          {
+            label: "Roles & Permissions",
+            desc: "RBAC team governance",
+            href: "/dashboard/roles",
+            icon: Key,
           },
           {
             label: "Storage & CDN",

@@ -32,6 +32,7 @@ import {
   Radio,
   Lock,
   FileEdit,
+  Key,
 } from "lucide-react";
 import { useTheme } from "@/components/layout/theme-provider";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
@@ -121,6 +122,12 @@ export function DashboardSidebar({
           href: "/dashboard/notifications",
           icon: Radio,
           badge: unreadNotificationsCount > 0 ? unreadNotificationsCount.toString() : undefined,
+        },
+        {
+          label: "Roles & Permissions",
+          href: "/dashboard/roles",
+          icon: Key,
+          badge: "RBAC",
         },
         {
           label: "System & Security",

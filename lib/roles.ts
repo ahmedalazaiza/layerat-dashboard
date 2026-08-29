@@ -152,7 +152,7 @@ export const INITIAL_ADMIN_MEMBERS: AdminMember[] = [
   {
     id: "admin-1",
     name: "Ahmed Al-Azaiza",
-    email: "ahmed@layerat.com",
+    email: "ahmedazy.uxui@gmail.com",
     username: "ahmed_al_azaiza",
     avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300",
     roleId: "super_admin",

@@ -33,6 +33,7 @@ import {
 } from "./supabase/auth";
 import { supabase } from "./supabase/client";
 import { VerificationModal, GatedActionType } from "@/components/ui/verification-modal";
+import { isSuperAdminEmail, getSuperAdminCreator } from "./auth-security";
 
 interface SessionContextType {
   user: Creator | null;
@@ -273,9 +274,27 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         setFollowingCreatorIds(new Set(userFollows));
         setNotifications(userNotifs);
       } else {
-        setUser(null);
-        setNotifications([]);
-        setFollowingCreatorIds(new Set());
+        // Check if there is an active local cached Super Admin session
+        let hasSuperAdminSession = false;
+        if (typeof window !== "undefined") {
+          try {
+            const cached = localStorage.getItem("craft_cached_profile");
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              if (parsed && isSuperAdminEmail(parsed.email)) {
+                setUser(getSuperAdminCreator());
+                hasSuperAdminSession = true;
+              }
+            }
+          } catch {
+            // Ignore
+          }
+        }
+        if (!hasSuperAdminSession) {
+          setUser(null);
+          setNotifications([]);
+          setFollowingCreatorIds(new Set());
+        }
       }
     } catch (err: unknown) {
       const errorObj = err as { name?: string; message?: string };

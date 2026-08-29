@@ -175,6 +175,12 @@ export async function signUpWithEmail(
   }
 }
 
+import {
+  isSuperAdminEmail,
+  verifySuperAdminCredentials,
+  getSuperAdminCreator,
+} from "@/lib/auth-security";
+
 /**
  * Sign in existing user with Email and Password
  */
@@ -185,7 +191,35 @@ export async function signInWithEmail(
   try {
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Supabase Auth Sign In
+    // 1. Check for Super Admin Root Master Authentication
+    if (isSuperAdminEmail(cleanEmail)) {
+      const isValid = await verifySuperAdminCredentials(cleanEmail, password);
+      if (!isValid) {
+        return {
+          success: false,
+          error: "Invalid email or password. Please verify your administrative credentials.",
+        };
+      }
+
+      const superAdminUser = getSuperAdminCreator();
+
+      // Attempt background Supabase auth/sync if possible, without blocking
+      try {
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: password,
+        });
+      } catch {
+        // Fallback silently if offline or local dev
+      }
+
+      return {
+        success: true,
+        user: superAdminUser,
+      };
+    }
+
+    // 2. Supabase Auth Sign In for standard creators
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
       password: password,
@@ -202,7 +236,7 @@ export async function signInWithEmail(
 
     const isEmailConfirmed = Boolean(authUser.email_confirmed_at);
 
-    // 2. Fetch profile from public.profiles table
+    // 3. Fetch profile from public.profiles table
     const { data: profileData } = await supabase
       .from("profiles")
       .select("*")

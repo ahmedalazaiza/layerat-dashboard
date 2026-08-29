@@ -20,9 +20,6 @@ import {
   TrendingUp,
   ShieldCheck,
   Shield,
-  ShieldAlert,
-  Zap,
-  Activity,
   Layers,
   Database,
   Download,
@@ -31,8 +28,6 @@ import {
   Radio,
   Lock,
   RefreshCw,
-  SlidersHorizontal,
-  CheckCircle2,
   Cpu,
   FileEdit,
   Key,
@@ -82,19 +77,19 @@ export default function DashboardOverviewPage() {
   return (
     <div className="space-y-8">
       {/* Super Admin Top Command Banner */}
-      <div className="relative overflow-hidden rounded-[28px] border border-[var(--border-neutral)] bg-gradient-to-br from-[var(--bg-elevated)] via-[var(--bg-elevated)] to-[var(--bg-neutral)] p-6 sm:p-8 shadow-xs">
+      <div className="relative overflow-hidden rounded-[28px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-6 sm:p-8 shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--chip-bg)] text-[var(--chip-fg)] px-3 py-0.5 text-xs font-bold shadow-2xs">
-                <Shield className="h-3.5 w-3.5 fill-current text-[var(--accent)]" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black px-3 py-0.5 text-xs font-bold shadow-2xs">
+                <Shield className="h-3.5 w-3.5 fill-current" />
                 <span>Super Admin Console</span>
               </span>
-              <span className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 text-[11px] font-mono font-bold flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
+              <span className="rounded-full bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800 px-2.5 py-0.5 text-[11px] font-mono font-bold flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-black dark:bg-white animate-ping" />
                 <span>Platform Operational</span>
               </span>
-              <span className="text-xs text-[var(--content-tertiary)] font-mono">
+              <span className="text-xs text-neutral-400 font-mono">
                 Production v1.2.0
               </span>
             </div>
@@ -102,12 +97,12 @@ export default function DashboardOverviewPage() {
             <h1
               className={cn(
                 bricolage.className,
-                "text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[var(--content-primary)]"
+                "text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50"
               )}
             >
               Master Command Center — Layerat Platform
             </h1>
-            <p className="text-xs sm:text-sm text-[var(--content-secondary)] max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-neutral-500 max-w-2xl leading-relaxed">
               Full administrative oversight across {projects.length} monographs, {creators.length} creator studios, real-time critique streams, and Gemini Vision AI engines.
             </p>
           </div>
@@ -118,66 +113,63 @@ export default function DashboardOverviewPage() {
               type="button"
               onClick={handleQuickPurge}
               disabled={isPurging}
-              className="flex items-center gap-2 rounded-full border border-[var(--border-neutral)] bg-[var(--bg-elevated)] px-4 py-2.5 text-xs font-bold text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] active:scale-95 transition-all shadow-xs cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-2.5 text-xs font-bold text-neutral-900 dark:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 active:scale-95 transition-all shadow-xs cursor-pointer disabled:opacity-50"
               title="Purge in-memory query cache"
             >
-              <RefreshCw className={cn("h-4 w-4", isPurging && "animate-spin text-[var(--accent)]")} />
+              <RefreshCw className={cn("h-4 w-4", isPurging && "animate-spin text-black dark:text-white")} />
               <span>{purgedSuccess ? "Cache Purged!" : "Purge App Cache"}</span>
             </button>
 
             <Link
               href="/dashboard/notifications"
-              className="flex items-center gap-2 rounded-full border border-[var(--border-neutral)] bg-[var(--bg-elevated)] px-4 py-2.5 text-xs font-bold text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] active:scale-95 transition-all shadow-xs"
+              className="flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-2.5 text-xs font-bold text-neutral-900 dark:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 active:scale-95 transition-all shadow-xs"
             >
-              <Radio className="h-4 w-4 text-[var(--content-secondary)]" />
+              <Radio className="h-4 w-4 text-neutral-500" />
               <span>Global Broadcast</span>
             </Link>
 
             <Link
               href="/me/projects/new"
-              className="flex items-center gap-2 rounded-full bg-[var(--primary-forest-green)] dark:bg-[var(--accent)] px-4 py-2.5 text-xs font-bold text-white dark:text-[var(--primary-forest-green)] hover:opacity-90 active:scale-95 transition-all shadow-sm"
+              className="flex items-center gap-2 rounded-full bg-black dark:bg-white px-4 py-2.5 text-xs font-bold text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 active:scale-95 transition-all shadow-sm"
             >
               <Plus className="h-4 w-4 stroke-[2.5]" />
               <span>Publish Monograph</span>
             </Link>
           </div>
         </div>
-
-        {/* Subtle Decorative Radial Glow */}
-        <div className="pointer-events-none absolute -right-16 -bottom-16 h-64 w-64 rounded-full bg-[var(--accent)]/5 blur-3xl" />
       </div>
 
       {/* System Infrastructure Health Metric Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-[20px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-xs shadow-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-[20px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black text-xs shadow-xs">
         <div className="flex items-center gap-2.5 p-2">
-          <Database className="h-4 w-4 text-emerald-500 shrink-0" />
+          <Database className="h-4 w-4 text-neutral-900 dark:text-neutral-100 shrink-0" />
           <div className="min-w-0">
-            <div className="text-[10px] text-[var(--content-tertiary)] uppercase font-mono font-bold">Database</div>
-            <div className="font-bold text-[var(--content-primary)] truncate">Supabase Live</div>
+            <div className="text-[10px] text-neutral-400 uppercase font-mono font-bold">Database</div>
+            <div className="font-bold text-neutral-900 dark:text-neutral-100 truncate">Supabase Live</div>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5 p-2">
-          <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
+          <ShieldCheck className="h-4 w-4 text-neutral-900 dark:text-neutral-100 shrink-0" />
           <div className="min-w-0">
-            <div className="text-[10px] text-[var(--content-tertiary)] uppercase font-mono font-bold">Security (RLS)</div>
-            <div className="font-bold text-[var(--content-primary)] truncate">100% Enforced</div>
+            <div className="text-[10px] text-neutral-400 uppercase font-mono font-bold">Security (RLS)</div>
+            <div className="font-bold text-neutral-900 dark:text-neutral-100 truncate">100% Enforced</div>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5 p-2">
-          <Cpu className="h-4 w-4 text-[var(--accent)] shrink-0" />
+          <Cpu className="h-4 w-4 text-neutral-900 dark:text-neutral-100 shrink-0" />
           <div className="min-w-0">
-            <div className="text-[10px] text-[var(--content-tertiary)] uppercase font-mono font-bold">AI Vision Engine</div>
-            <div className="font-bold text-[var(--content-primary)] truncate">Gemini Multimodal</div>
+            <div className="text-[10px] text-neutral-400 uppercase font-mono font-bold">AI Vision Engine</div>
+            <div className="font-bold text-neutral-900 dark:text-neutral-100 truncate">Gemini Multimodal</div>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5 p-2">
-          <Server className="h-4 w-4 text-sky-500 shrink-0" />
+          <Server className="h-4 w-4 text-neutral-900 dark:text-neutral-100 shrink-0" />
           <div className="min-w-0">
-            <div className="text-[10px] text-[var(--content-tertiary)] uppercase font-mono font-bold">Server Runtime</div>
-            <div className="font-bold text-[var(--content-primary)] truncate">Next.js 16 (Turbopack)</div>
+            <div className="text-[10px] text-neutral-400 uppercase font-mono font-bold">Server Runtime</div>
+            <div className="font-bold text-neutral-900 dark:text-neutral-100 truncate">Next.js 16 (Turbopack)</div>
           </div>
         </div>
       </div>
@@ -187,7 +179,7 @@ export default function DashboardOverviewPage() {
         <StatsCard
           title="Platform Monographs"
           value={projects.length}
-          subValue={`${stats.publishedCount} Live / ${stats.draftCount} Draft / ${stats.featuredCount} Featured`}
+          subValue={`${stats.publishedCount} Live / ${stats.draftCount} Draft`}
           change="+14.2%"
           trend="up"
           icon={FolderKanban}
@@ -200,27 +192,24 @@ export default function DashboardOverviewPage() {
           change="+28.6%"
           trend="up"
           icon={Heart}
-          accentColor="#10B981"
           sparklineData={[40, 35, 60, 75, 70, 85, 95]}
         />
         <StatsCard
           title="Critiques & Comments"
           value={stats.totalComments.toLocaleString()}
-          subValue="Active Discussion Stream"
+          subValue="Discussion Stream"
           change="+18.9%"
           trend="up"
           icon={MessageSquare}
-          accentColor="#F59E0B"
           sparklineData={[15, 25, 30, 50, 45, 70, 85]}
         />
         <StatsCard
           title="User & Studio Accounts"
           value={stats.totalCreators}
-          subValue={`${stats.verifiedCreators} Verified / ${stats.onlineCreators} Online`}
+          subValue={`${stats.verifiedCreators} Verified`}
           change="+8.4%"
           trend="up"
           icon={Users}
-          accentColor="#10B981"
           sparklineData={[20, 35, 40, 55, 65, 80, 90]}
         />
       </div>
@@ -229,7 +218,7 @@ export default function DashboardOverviewPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
           {
-            label: "Monographs Manager",
+            label: "Monographs",
             desc: "Kanban & data tables",
             href: "/dashboard/projects",
             icon: FolderKanban,
@@ -259,16 +248,10 @@ export default function DashboardOverviewPage() {
             icon: Layers,
           },
           {
-            label: "Roles & Permissions",
-            desc: "RBAC team governance",
+            label: "Roles & RBAC",
+            desc: "Team governance",
             href: "/dashboard/roles",
             icon: Key,
-          },
-          {
-            label: "Storage & CDN",
-            desc: "Media buckets vault",
-            href: "/dashboard/media",
-            icon: Database,
           },
         ].map((action) => {
           const Icon = action.icon;
@@ -276,19 +259,19 @@ export default function DashboardOverviewPage() {
             <Link
               key={action.href}
               href={action.href}
-              className="group flex flex-col justify-between rounded-[20px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-4 transition-all duration-200 hover:border-[var(--content-primary)] hover:shadow-xs cursor-pointer"
+              className="group flex flex-col justify-between rounded-[20px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-4 transition-all duration-200 hover:border-black dark:hover:border-white hover:shadow-xs cursor-pointer"
             >
               <div className="flex items-center justify-between">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--bg-neutral)] text-[var(--content-primary)] group-hover:bg-[var(--chip-bg)] group-hover:text-[var(--chip-fg)] transition-colors">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black transition-colors">
                   <Icon className="h-4 w-4" />
                 </div>
-                <ArrowUpRight className="h-3.5 w-3.5 text-[var(--content-tertiary)] group-hover:text-[var(--content-primary)] transition-colors" />
+                <ArrowUpRight className="h-3.5 w-3.5 text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
               </div>
               <div className="mt-3">
-                <div className="text-xs font-bold text-[var(--content-primary)] truncate">
+                <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate">
                   {action.label}
                 </div>
-                <div className="text-[10px] text-[var(--content-tertiary)] truncate">
+                <div className="text-[10px] text-neutral-400 truncate">
                   {action.desc}
                 </div>
               </div>

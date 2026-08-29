@@ -93,37 +93,37 @@ export function CommentModerationList({ projects }: CommentModerationListProps) 
   return (
     <div className="space-y-4">
       {/* Search Toolbar */}
-      <div className="flex items-center gap-3 rounded-[20px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-3 shadow-2xs">
+      <div className="flex items-center gap-3 rounded-[20px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-3 shadow-2xs">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--content-tertiary)]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search critiques by keyword, author, or project..."
-            className="w-full rounded-full border border-[var(--border-neutral)] bg-[var(--bg-screen)] pl-9 pr-8 py-1.5 text-xs text-[var(--content-primary)] placeholder:text-[var(--content-tertiary)] focus:border-[var(--content-primary)] focus:outline-none"
+            placeholder="Search critiques by keyword, author, or project title..."
+            className="w-full rounded-xl bg-neutral-100 dark:bg-neutral-900/60 py-2 pl-9 pr-4 text-xs text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--content-tertiary)] hover:text-[var(--content-primary)] cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 cursor-pointer"
             >
               <X className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
-        <div className="text-xs font-mono text-[var(--content-tertiary)] px-2">
-          {filteredComments.length} Critiques
+
+        <div className="text-xs font-mono text-neutral-400 pr-2">
+          {filteredComments.length} critiques
         </div>
       </div>
 
-      {/* Critiques Stream Container */}
-      <div className="overflow-hidden rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] shadow-xs divide-y divide-[var(--border-neutral)]/60">
+      {/* Moderation Stream List */}
+      <div className="space-y-3">
         {filteredComments.length === 0 ? (
-          <div className="py-16 text-center text-xs text-[var(--content-tertiary)] space-y-2">
-            <MessageSquare className="h-8 w-8 mx-auto text-[var(--content-tertiary)]/50" />
-            <div>No critique comments found.</div>
+          <div className="rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-12 text-center text-xs text-neutral-400">
+            No critiques found matching query.
           </div>
         ) : (
           filteredComments.map((comment) => {
@@ -133,110 +133,91 @@ export function CommentModerationList({ projects }: CommentModerationListProps) 
               <div
                 key={comment.id}
                 className={cn(
-                  "p-4 sm:p-5 transition-colors hover:bg-[var(--bg-neutral)]/30 flex flex-col sm:flex-row items-start justify-between gap-4",
-                  isPinned && "bg-[var(--accent)]/5 border-l-2 border-l-[var(--accent)]"
+                  "group relative flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-[20px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-4 sm:p-5 transition-all hover:border-black dark:hover:border-white shadow-xs",
+                  isPinned && "border-black dark:border-white"
                 )}
               >
-                {/* Left: Author Info & Critique Body */}
+                {/* Author & Comment Body */}
                 <div className="flex items-start gap-3.5 min-w-0 flex-1">
-                  <div className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden ring-1 ring-[var(--border-neutral)] mt-0.5">
+                  <div className="relative h-9 w-9 rounded-full overflow-hidden shrink-0 ring-1 ring-neutral-200 dark:ring-neutral-800 mt-0.5">
                     <Image
                       src={getValidAvatarUrl(comment.author?.avatarUrl)}
                       alt={comment.author?.displayName || "Author"}
                       fill
-                      sizes="40px"
+                      sizes="36px"
                       className="object-cover"
                     />
                   </div>
 
-                  <div className="min-w-0 flex-1 space-y-1.5">
-                    {/* Header line: Author & Timestamp */}
-                    <div className="flex items-center gap-2 flex-wrap text-xs">
-                      <span className="font-bold text-[var(--content-primary)]">
-                        {comment.author?.displayName || "Studio Designer"}
+                  <div className="min-w-0 space-y-1.5 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-xs text-neutral-900 dark:text-neutral-100">
+                        {comment.author?.displayName || "Anonymous Designer"}
                       </span>
-                      <span className="text-[11px] text-[var(--content-tertiary)] font-mono">
-                        @{comment.author?.username || "creator"}
+                      <span className="text-[11px] font-mono text-neutral-400">
+                        @{comment.author?.username || "user"}
                       </span>
-                      <span>•</span>
-                      <span className="text-[10px] text-[var(--content-tertiary)] font-mono flex items-center gap-1">
+                      <span className="text-[10px] text-neutral-400">•</span>
+                      <span className="text-[10px] font-mono text-neutral-400 flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {comment.createdAt || "Recently"}
+                        <span>{comment.createdAt || "Recently"}</span>
                       </span>
                       {isPinned && (
-                        <span className="rounded-full bg-[var(--accent)] text-black px-2 py-0.5 text-[9px] font-bold flex items-center gap-1">
-                          <Pin className="h-2.5 w-2.5 fill-current" />
+                        <span className="rounded-full bg-black text-white dark:bg-white dark:text-black px-2 py-0.2 text-[9px] font-mono font-bold uppercase flex items-center gap-1">
+                          <Pin className="h-2.5 w-2.5" />
                           <span>Pinned Critique</span>
                         </span>
                       )}
                     </div>
 
                     {/* Critique Content */}
-                    <p className="text-xs text-[var(--content-secondary)] leading-relaxed bg-[var(--bg-neutral)] p-3 rounded-[14px] border border-[var(--border-neutral)]/40 font-medium">
-                      &quot;{comment.content}&quot;
+                    <p className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed font-sans pr-4">
+                      {comment.content}
                     </p>
 
-                    {/* Associated Project Banner */}
-                    <div className="flex items-center gap-2 pt-1 text-[11px] text-[var(--content-tertiary)]">
-                      <span>Critique on:</span>
+                    {/* Associated Project Monograph */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="text-[10px] uppercase font-mono text-neutral-400 font-bold">
+                        On Monograph:
+                      </span>
                       <Link
                         href={`/project/${comment.project.slug}`}
-                        className="font-bold text-[var(--content-primary)] hover:text-[var(--accent)] transition-colors underline truncate max-w-xs"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-900 dark:text-neutral-100 hover:opacity-75 transition-opacity truncate max-w-xs"
                       >
-                        {comment.project.title}
+                        <span>{comment.project.title}</span>
+                        <ExternalLink className="h-3 w-3 text-neutral-400" />
                       </Link>
                     </div>
                   </div>
                 </div>
 
-                {/* Right: Project Thumbnail & Actions */}
-                <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[var(--border-neutral)]/50">
-                  <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-[var(--bg-neutral)] border border-[var(--border-neutral)] hidden sm:block">
-                    <Image
-                      src={comment.project.coverImage || "/placeholder.jpg"}
-                      alt={comment.project.title}
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                    />
-                  </div>
+                {/* Moderation Actions */}
+                <div className="flex items-center justify-end gap-2 border-t md:border-t-0 border-neutral-100 dark:border-neutral-900 pt-3 md:pt-0 shrink-0">
+                  {/* Toggle Pin / Highlight */}
+                  <button
+                    type="button"
+                    onClick={() => handleTogglePin(comment.id)}
+                    className={cn(
+                      "flex h-8 items-center gap-1.5 px-3 rounded-lg border text-xs font-semibold transition-colors cursor-pointer",
+                      isPinned
+                        ? "bg-black text-white dark:bg-white dark:text-black border-transparent"
+                        : "border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white"
+                    )}
+                    title={isPinned ? "Unpin Critique" : "Pin Critique to Top"}
+                  >
+                    <Pin className="h-3 w-3" />
+                    <span>{isPinned ? "Pinned" : "Pin"}</span>
+                  </button>
 
-                  <div className="flex items-center gap-1.5">
-                    {/* Pin action */}
-                    <button
-                      type="button"
-                      onClick={() => handleTogglePin(comment.id)}
-                      className={cn(
-                        "flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] transition-colors cursor-pointer",
-                        isPinned
-                          ? "text-[var(--accent)] bg-[var(--accent)]/10"
-                          : "text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)]"
-                      )}
-                      title={isPinned ? "Unpin critique" : "Pin critique"}
-                    >
-                      <Pin className={cn("h-3.5 w-3.5", isPinned && "fill-current")} />
-                    </button>
-
-                    {/* View project discussion */}
-                    <Link
-                      href={`/project/${comment.project.slug}#critique-discussion`}
-                      target="_blank"
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
-                      title="Jump to critique section on project"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </Link>
-
-                    {/* Delete critique */}
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteComment(comment.id)}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                      title="Delete critique comment"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
+                  {/* Delete Comment */}
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteComment(comment.id)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors cursor-pointer"
+                    title="Delete Comment"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </div>
             );

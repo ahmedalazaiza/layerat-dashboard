@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
+import { bricolage } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 
 interface StatsCardProps {
@@ -12,9 +12,7 @@ interface StatsCardProps {
   change?: string;
   trend?: "up" | "down" | "neutral";
   icon: LucideIcon;
-  accentColor?: string;
   sparklineData?: number[];
-  className?: string;
 }
 
 export function StatsCard({
@@ -22,92 +20,88 @@ export function StatsCard({
   value,
   subValue,
   change,
-  trend = "up",
+  trend = "neutral",
   icon: Icon,
-  accentColor,
-  sparklineData = [35, 45, 40, 60, 55, 75, 90],
-  className,
+  sparklineData = [10, 25, 18, 30, 45, 38, 55],
 }: StatsCardProps) {
-  const isUp = trend === "up";
+  // Compute basic SVG sparkline path
+  const min = Math.min(...sparklineData);
+  const max = Math.max(...sparklineData);
+  const range = max - min || 1;
+  const width = 80;
+  const height = 28;
+
+  const points = sparklineData
+    .map((val, idx) => {
+      const x = (idx / (sparklineData.length - 1)) * width;
+      const y = height - ((val - min) / range) * (height - 6) - 3;
+      return `${x},${y}`;
+    })
+    .join(" ");
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.2 }}
-      className={cn(
-        "relative overflow-hidden rounded-[22px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-5 shadow-xs transition-shadow hover:shadow-md",
-        className
-      )}
-    >
-      {/* Top Row: Title & Icon */}
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-bold uppercase tracking-wider text-[var(--content-tertiary)]">
-          {title}
-        </span>
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--bg-neutral)] border border-[var(--border-neutral)] text-[var(--content-primary)]"
-          style={accentColor ? { color: accentColor } : undefined}
-        >
-          <Icon className="h-4 w-4" />
+    <div className="relative overflow-hidden rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-5 sm:p-6 transition-all duration-200 hover:border-neutral-400 dark:hover:border-neutral-600 shadow-xs">
+      <div className="flex items-start justify-between gap-4">
+        {/* Metric Identity & Title */}
+        <div className="space-y-1">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 font-semibold">
+            {title}
+          </span>
+          <div
+            className={cn(
+              bricolage.className,
+              "text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50"
+            )}
+          >
+            {value}
+          </div>
+        </div>
+
+        {/* Monochrome Icon Badge */}
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-2xs">
+          <Icon className="h-5 w-5" />
         </div>
       </div>
 
-      {/* Main Metric Value */}
-      <div className="mt-3 flex items-baseline gap-2">
-        <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--content-primary)] font-mono">
-          {value}
-        </span>
-        {subValue && (
-          <span className="text-xs text-[var(--content-tertiary)] font-medium">
-            {subValue}
-          </span>
-        )}
-      </div>
-
-      {/* Bottom Row: Trend Badge & Micro Sparkline */}
-      <div className="mt-4 flex items-center justify-between gap-3 pt-3 border-t border-[var(--border-neutral)]/50">
-        {change && (
-          <div className="flex items-center gap-1">
-            <span
-              className={cn(
-                "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-mono font-bold",
-                isUp
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                  : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
-              )}
-            >
-              {isUp ? (
-                <TrendingUp className="h-3 w-3" />
-              ) : (
-                <TrendingDown className="h-3 w-3" />
-              )}
-              {change}
+      {/* Footer Info: Sparkline & Context */}
+      <div className="mt-4 flex items-center justify-between border-t border-neutral-100 dark:border-neutral-900 pt-3">
+        {/* Context Subtitle or Trend */}
+        <div className="flex items-center gap-1.5 text-xs font-semibold">
+          {change && (
+            <span className="inline-flex items-center gap-0.5 font-mono text-[11px] text-neutral-900 dark:text-neutral-100">
+              {trend === "up" ? (
+                <TrendingUp className="h-3.5 w-3.5" />
+              ) : trend === "down" ? (
+                <TrendingDown className="h-3.5 w-3.5" />
+              ) : null}
+              <span>{change}</span>
             </span>
-            <span className="text-[10px] text-[var(--content-tertiary)]">vs last cycle</span>
+          )}
+
+          {subValue && (
+            <span className="text-[11px] text-neutral-400 truncate max-w-[140px]">
+              {subValue}
+            </span>
+          )}
+        </div>
+
+        {/* Minimalist SVG Sparkline */}
+        {sparklineData.length > 1 && (
+          <div className="shrink-0 opacity-60 hover:opacity-100 transition-opacity">
+            <svg width={width} height={height} className="overflow-visible">
+              <polyline
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                points={points}
+                className="text-neutral-900 dark:text-neutral-100"
+              />
+            </svg>
           </div>
         )}
-
-        {/* Dynamic Micro SVG Sparkline */}
-        <div className="h-6 w-16 flex items-end gap-1">
-          {sparklineData.map((val, idx) => {
-            const heightPercent = Math.max(15, Math.min(100, val));
-            return (
-              <div
-                key={idx}
-                className={cn(
-                  "w-1.5 rounded-full transition-all duration-300",
-                  idx === sparklineData.length - 1
-                    ? "bg-[var(--accent)]"
-                    : "bg-[var(--content-tertiary)]/20"
-                )}
-                style={{ height: `${heightPercent}%` }}
-              />
-            );
-          })}
-        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

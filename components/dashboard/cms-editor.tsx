@@ -32,7 +32,7 @@ interface CMSEditorProps {
 
 export function CMSEditor({ projects }: CMSEditorProps) {
   const [activeTab, setActiveTab] = useState<
-    "homepage" | "about" | "guidelines" | "legal" | "team" | "announcement" | "seo"
+    "homepage" | "about" | "guidelines" | "legal" | "announcement" | "seo"
   >("homepage");
 
   const [isSaved, setIsSaved] = useState(false);
@@ -102,98 +102,120 @@ export function CMSEditor({ projects }: CMSEditorProps) {
         const parsed = JSON.parse(stored);
         if (parsed.heroTitle) setHeroTitle(parsed.heroTitle);
         if (parsed.heroSubtitle) setHeroSubtitle(parsed.heroSubtitle);
+        if (parsed.aboutHeadline) setAboutHeadline(parsed.aboutHeadline);
+        if (parsed.aboutMission) setAboutMission(parsed.aboutMission);
+        if (parsed.guidelinesText) setGuidelinesText(parsed.guidelinesText);
+        if (parsed.privacyPolicyText) setPrivacyPolicyText(parsed.privacyPolicyText);
+        if (parsed.termsText) setTermsText(parsed.termsText);
         if (parsed.bannerMessage) setBannerMessage(parsed.bannerMessage);
+        if (parsed.metaTitleTemplate) setMetaTitleTemplate(parsed.metaTitleTemplate);
       }
-    } catch {}
+    } catch (e) {
+      console.error("Failed to load CMS content from storage:", e);
+    }
   }, []);
 
-  const handleSaveCMS = () => {
+  const handleSaveCMS = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cmsPayload = {
+      heroTitle,
+      heroSubtitle,
+      heroPrimaryCtaText,
+      heroPrimaryCtaLink,
+      heroSecondaryCtaText,
+      heroSecondaryCtaLink,
+      featuredProjectId,
+      statsCreatorsCount,
+      statsMonographsCount,
+      statsCountriesCount,
+      aboutHeadline,
+      aboutMission,
+      aboutPillar1Title,
+      aboutPillar1Desc,
+      aboutPillar2Title,
+      aboutPillar2Desc,
+      aboutPillar3Title,
+      aboutPillar3Desc,
+      guidelinesHeadline,
+      guidelinesMinResolution,
+      guidelinesText,
+      privacyPolicyText,
+      termsText,
+      legalLastUpdated,
+      isBannerActive,
+      bannerBadge,
+      bannerMessage,
+      bannerLink,
+      metaTitleTemplate,
+      metaDescription,
+      socialTwitterHandle,
+      socialInstagramUrl,
+      socialDiscordUrl,
+      lastUpdatedBy: "Super Admin",
+      lastUpdatedAt: new Date().toISOString(),
+    };
+
     try {
-      const payload = {
-        heroTitle,
-        heroSubtitle,
-        heroPrimaryCtaText,
-        heroPrimaryCtaLink,
-        heroSecondaryCtaText,
-        heroSecondaryCtaLink,
-        featuredProjectId,
-        aboutHeadline,
-        aboutMission,
-        guidelinesHeadline,
-        guidelinesText,
-        privacyPolicyText,
-        termsText,
-        bannerBadge,
-        bannerMessage,
-        bannerLink,
-        isBannerActive,
-        metaTitleTemplate,
-        metaDescription,
-        socialTwitterHandle,
-      };
-      localStorage.setItem("layerat_cms_content", JSON.stringify(payload));
+      localStorage.setItem("layerat_cms_content", JSON.stringify(cmsPayload));
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2500);
     } catch (err) {
-      console.error("Failed to save CMS content:", err);
+      console.error("Failed to save CMS payload:", err);
     }
   };
 
-  const tabs = [
-    { id: "homepage", label: "Homepage & Hero", icon: Home },
-    { id: "about", label: "About Us & Story", icon: FileText },
-    { id: "guidelines", label: "Curation Guidelines", icon: CheckCircle2 },
-    { id: "legal", label: "Legal, Privacy & Terms", icon: Shield },
-    { id: "announcement", label: "Top Global Banner", icon: Radio },
-    { id: "seo", label: "Global SEO & Socials", icon: Globe },
-  ] as const;
-
   return (
     <div className="space-y-6">
-      {/* Super Admin CMS Header Banner */}
-      <div className="rounded-[24px] border border-[var(--border-neutral)] bg-gradient-to-br from-[var(--bg-elevated)] via-[var(--bg-elevated)] to-[var(--bg-neutral)] p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--primary-forest-green)] dark:bg-[var(--accent)] text-white dark:text-black font-bold shadow-xs">
-            <FileEdit className="h-6 w-6" />
+      {/* Super Admin Top Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-4 sm:p-5 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black font-bold">
+            <FileEdit className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-[var(--content-primary)]">
-                Master Platform CMS & Content Administration
+              <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                Master Platform CMS & Content Studio
               </h2>
-              <span className="rounded bg-[var(--chip-bg)] text-[var(--chip-fg)] px-2 py-0.2 text-[9px] font-mono uppercase font-bold">
-                Super Admin Access
+              <span className="rounded bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 px-2 py-0.2 text-[9px] font-mono font-bold uppercase">
+                Super Admin
               </span>
             </div>
-            <p className="text-xs text-[var(--content-secondary)] mt-0.5">
-              Live content control across all public pages, hero displays, legal guidelines, and global announcements.
+            <p className="text-xs text-neutral-500">
+              Direct editing control over all public pages: Homepage, About, Editorial Guidelines, Legal, Announcement Ribbon, and Meta SEO.
             </p>
           </div>
         </div>
 
-        {/* Global Save Button */}
-        <button
-          type="button"
-          onClick={handleSaveCMS}
-          className="flex items-center justify-center gap-2 rounded-full bg-[var(--primary-forest-green)] dark:bg-[var(--accent)] px-6 py-2.5 text-xs font-bold text-white dark:text-[var(--primary-forest-green)] hover:opacity-90 active:scale-95 transition-all shadow-md cursor-pointer shrink-0"
-        >
-          {isSaved ? (
-            <>
-              <Check className="h-4 w-4 stroke-[3]" />
-              <span>Published Live to Platform!</span>
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4" />
-              <span>Save & Publish Changes</span>
-            </>
+        {/* Save CTA */}
+        <div className="flex items-center gap-2 shrink-0">
+          {isSaved && (
+            <span className="flex items-center gap-1 text-xs font-mono font-bold text-neutral-900 dark:text-neutral-100 animate-in fade-in duration-200">
+              <Check className="h-4 w-4" />
+              <span>Published Live!</span>
+            </span>
           )}
-        </button>
+          <button
+            type="button"
+            onClick={handleSaveCMS}
+            className="flex items-center gap-2 rounded-full bg-black text-white dark:bg-white dark:text-black px-5 py-2 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-neutral-200 active:scale-95 transition-all shadow-xs cursor-pointer"
+          >
+            <Save className="h-4 w-4" />
+            <span>Publish CMS Updates</span>
+          </button>
+        </div>
       </div>
 
-      {/* CMS Navigation Tabs Bar */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-[var(--border-neutral)]/60">
-        {tabs.map((tab) => {
+      {/* Navigation Tabs Bar */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-neutral-200 dark:border-neutral-800">
+        {[
+          { id: "homepage" as const, label: "Homepage Hero & Stats", icon: Home },
+          { id: "about" as const, label: "About Story & Pillars", icon: Layers },
+          { id: "guidelines" as const, label: "Publishing Guidelines", icon: HelpCircle },
+          { id: "legal" as const, label: "Privacy & Terms", icon: Shield },
+          { id: "announcement" as const, label: "Top Ribbon Announcement", icon: Radio },
+          { id: "seo" as const, label: "Global SEO & Social", icon: Globe },
+        ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
@@ -204,11 +226,11 @@ export function CMSEditor({ projects }: CMSEditorProps) {
               className={cn(
                 "flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all cursor-pointer whitespace-nowrap",
                 isActive
-                  ? "bg-[var(--chip-bg)] text-[var(--chip-fg)] shadow-xs"
-                  : "text-[var(--content-secondary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)]"
+                  ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
+                  : "text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900"
               )}
             >
-              <Icon className={cn("h-3.5 w-3.5", isActive && "text-[var(--accent)]")} />
+              <Icon className="h-3.5 w-3.5" />
               <span>{tab.label}</span>
             </button>
           );
@@ -216,25 +238,23 @@ export function CMSEditor({ projects }: CMSEditorProps) {
       </div>
 
       {/* Main CMS Form Sections */}
-      <div className="rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-6 sm:p-8 shadow-xs">
-        {/* ========================================================================= */}
+      <div className="rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-6 sm:p-8 shadow-xs">
         {/* 1. HOMEPAGE CMS */}
-        {/* ========================================================================= */}
         {activeTab === "homepage" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-[var(--border-neutral)]/60 pb-3">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-900 pb-3">
               <div>
-                <h3 className="text-sm font-bold text-[var(--content-primary)]">
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
                   Homepage Hero & Headline Settings
                 </h3>
-                <p className="text-xs text-[var(--content-tertiary)]">
+                <p className="text-xs text-neutral-500">
                   Manage the main value proposition, primary call to action, and spotlight monograph on the landing page.
                 </p>
               </div>
               <Link
                 href="/"
                 target="_blank"
-                className="text-xs font-bold text-[var(--content-secondary)] hover:text-[var(--content-primary)] flex items-center gap-1"
+                className="text-xs font-bold text-neutral-500 hover:text-black dark:hover:text-white flex items-center gap-1"
               >
                 <span>Live View</span>
                 <ExternalLink className="h-3 w-3" />
@@ -243,64 +263,64 @@ export function CMSEditor({ projects }: CMSEditorProps) {
 
             <div className="grid grid-cols-1 gap-5">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
                   Hero Monumental Headline (Bricolage Grotesque)
                 </label>
                 <input
                   type="text"
                   value={heroTitle}
                   onChange={(e) => setHeroTitle(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-4 py-2.5 text-xs font-bold text-[var(--content-primary)] focus:border-[var(--content-primary)] focus:outline-none"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-4 py-2.5 text-xs font-bold text-neutral-900 dark:text-neutral-100 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
                   Hero Sub-Narrative Description
                 </label>
                 <textarea
                   rows={3}
                   value={heroSubtitle}
                   onChange={(e) => setHeroSubtitle(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] p-3 text-xs text-[var(--content-primary)] focus:border-[var(--content-primary)] focus:outline-none leading-relaxed"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-3 text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none leading-relaxed"
                 />
               </div>
 
               {/* CTAs */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
                     Primary CTA Button Text
                   </label>
                   <input
                     type="text"
                     value={heroPrimaryCtaText}
                     onChange={(e) => setHeroPrimaryCtaText(e.target.value)}
-                    className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3.5 py-2 text-xs font-medium text-[var(--content-primary)] focus:outline-none"
+                    className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3.5 py-2 text-xs font-medium text-neutral-900 dark:text-neutral-100 focus:outline-none"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
                     Primary CTA Link Target
                   </label>
                   <input
                     type="text"
                     value={heroPrimaryCtaLink}
                     onChange={(e) => setHeroPrimaryCtaLink(e.target.value)}
-                    className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3.5 py-2 text-xs font-medium text-[var(--content-primary)] focus:outline-none"
+                    className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3.5 py-2 text-xs font-medium text-neutral-900 dark:text-neutral-100 focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Hero Spotlight Project */}
-              <div className="space-y-1.5 pt-2 border-t border-[var(--border-neutral)]/60">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
+              <div className="space-y-1.5 pt-2 border-t border-neutral-100 dark:border-neutral-900">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
                   Homepage Spotlight Monograph (Hero Pinned Showcase)
                 </label>
                 <select
                   value={featuredProjectId}
                   onChange={(e) => setFeaturedProjectId(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-4 py-2.5 text-xs font-semibold text-[var(--content-primary)] focus:outline-none"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-4 py-2.5 text-xs font-semibold text-neutral-900 dark:text-neutral-100 focus:outline-none"
                 >
                   {projects.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -311,36 +331,36 @@ export function CMSEditor({ projects }: CMSEditorProps) {
               </div>
 
               {/* Stats Counters Overrides */}
-              <div className="space-y-2 pt-2 border-t border-[var(--border-neutral)]/60">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
+              <div className="space-y-2 pt-2 border-t border-neutral-100 dark:border-neutral-900">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
                   Platform Impact Stat Badges (Hero Counter Display)
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-mono text-[var(--content-tertiary)]">Creators Count</span>
+                    <span className="text-[10px] font-mono text-neutral-400">Creators Count</span>
                     <input
                       type="text"
                       value={statsCreatorsCount}
                       onChange={(e) => setStatsCreatorsCount(e.target.value)}
-                      className="w-full rounded-[10px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3 py-1.5 text-xs font-mono font-bold text-[var(--content-primary)]"
+                      className="w-full rounded-[10px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3 py-1.5 text-xs font-mono font-bold text-neutral-900 dark:text-neutral-100"
                     />
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] font-mono text-[var(--content-tertiary)]">Monographs Count</span>
+                    <span className="text-[10px] font-mono text-neutral-400">Monographs Count</span>
                     <input
                       type="text"
                       value={statsMonographsCount}
                       onChange={(e) => setStatsMonographsCount(e.target.value)}
-                      className="w-full rounded-[10px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3 py-1.5 text-xs font-mono font-bold text-[var(--content-primary)]"
+                      className="w-full rounded-[10px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3 py-1.5 text-xs font-mono font-bold text-neutral-900 dark:text-neutral-100"
                     />
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] font-mono text-[var(--content-tertiary)]">Countries Reach</span>
+                    <span className="text-[10px] font-mono text-neutral-400">Countries Reach</span>
                     <input
                       type="text"
                       value={statsCountriesCount}
                       onChange={(e) => setStatsCountriesCount(e.target.value)}
-                      className="w-full rounded-[10px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3 py-1.5 text-xs font-mono font-bold text-[var(--content-primary)]"
+                      className="w-full rounded-[10px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3 py-1.5 text-xs font-mono font-bold text-neutral-900 dark:text-neutral-100"
                     />
                   </div>
                 </div>
@@ -349,391 +369,341 @@ export function CMSEditor({ projects }: CMSEditorProps) {
           </div>
         )}
 
-        {/* ========================================================================= */}
         {/* 2. ABOUT US CMS */}
-        {/* ========================================================================= */}
         {activeTab === "about" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-[var(--border-neutral)]/60 pb-3">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-900 pb-3">
               <div>
-                <h3 className="text-sm font-bold text-[var(--content-primary)]">
-                  About Us & Studio Ethos Content (`/about`)
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                  About Page Narrative & Editorial Pillars
                 </h3>
-                <p className="text-xs text-[var(--content-tertiary)]">
-                  Edit the founding story, editorial pillars, and platform manifesto.
+                <p className="text-xs text-neutral-500">
+                  Manage the manifesto, founding premise, and key creative pillars at /about.
                 </p>
               </div>
               <Link
                 href="/about"
                 target="_blank"
-                className="text-xs font-bold text-[var(--content-secondary)] hover:text-[var(--content-primary)] flex items-center gap-1"
+                className="text-xs font-bold text-neutral-500 hover:text-black dark:hover:text-white flex items-center gap-1"
               >
                 <span>Live View</span>
                 <ExternalLink className="h-3 w-3" />
               </Link>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-5">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  About Page Headline
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  About Hero Headline
                 </label>
                 <input
                   type="text"
                   value={aboutHeadline}
                   onChange={(e) => setAboutHeadline(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-4 py-2.5 text-xs font-bold text-[var(--content-primary)]"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-4 py-2 text-xs font-bold text-neutral-900 dark:text-neutral-100 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Core Mission & Story Manifesto
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  Core Manifesto & Philosophy
                 </label>
                 <textarea
                   rows={4}
                   value={aboutMission}
                   onChange={(e) => setAboutMission(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] p-3 text-xs text-[var(--content-primary)] leading-relaxed"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-3 text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none leading-relaxed"
                 />
               </div>
 
-              {/* 3 Pillars */}
-              <div className="space-y-3 pt-2 border-t border-[var(--border-neutral)]/60">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  3 Editorial Pillars
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="rounded-[16px] border border-[var(--border-neutral)] bg-[var(--bg-neutral)] p-3.5 space-y-2">
-                    <input
-                      type="text"
-                      value={aboutPillar1Title}
-                      onChange={(e) => setAboutPillar1Title(e.target.value)}
-                      className="w-full font-bold text-xs bg-transparent border-b border-[var(--border-neutral)] pb-1"
-                    />
-                    <textarea
-                      rows={3}
-                      value={aboutPillar1Desc}
-                      onChange={(e) => setAboutPillar1Desc(e.target.value)}
-                      className="w-full text-[11px] bg-transparent text-[var(--content-secondary)] resize-none"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-neutral-100 dark:border-neutral-900">
+                <div className="space-y-2 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
+                  <span className="text-[10px] font-mono font-bold uppercase text-neutral-400">Pillar 01</span>
+                  <input
+                    type="text"
+                    value={aboutPillar1Title}
+                    onChange={(e) => setAboutPillar1Title(e.target.value)}
+                    className="w-full rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-2 text-xs font-bold text-neutral-900 dark:text-neutral-100"
+                  />
+                  <textarea
+                    rows={3}
+                    value={aboutPillar1Desc}
+                    onChange={(e) => setAboutPillar1Desc(e.target.value)}
+                    className="w-full rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-2 text-[11px] text-neutral-700 dark:text-neutral-300"
+                  />
+                </div>
 
-                  <div className="rounded-[16px] border border-[var(--border-neutral)] bg-[var(--bg-neutral)] p-3.5 space-y-2">
-                    <input
-                      type="text"
-                      value={aboutPillar2Title}
-                      onChange={(e) => setAboutPillar2Title(e.target.value)}
-                      className="w-full font-bold text-xs bg-transparent border-b border-[var(--border-neutral)] pb-1"
-                    />
-                    <textarea
-                      rows={3}
-                      value={aboutPillar2Desc}
-                      onChange={(e) => setAboutPillar2Desc(e.target.value)}
-                      className="w-full text-[11px] bg-transparent text-[var(--content-secondary)] resize-none"
-                    />
-                  </div>
+                <div className="space-y-2 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
+                  <span className="text-[10px] font-mono font-bold uppercase text-neutral-400">Pillar 02</span>
+                  <input
+                    type="text"
+                    value={aboutPillar2Title}
+                    onChange={(e) => setAboutPillar2Title(e.target.value)}
+                    className="w-full rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-2 text-xs font-bold text-neutral-900 dark:text-neutral-100"
+                  />
+                  <textarea
+                    rows={3}
+                    value={aboutPillar2Desc}
+                    onChange={(e) => setAboutPillar2Desc(e.target.value)}
+                    className="w-full rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-2 text-[11px] text-neutral-700 dark:text-neutral-300"
+                  />
+                </div>
 
-                  <div className="rounded-[16px] border border-[var(--border-neutral)] bg-[var(--bg-neutral)] p-3.5 space-y-2">
-                    <input
-                      type="text"
-                      value={aboutPillar3Title}
-                      onChange={(e) => setAboutPillar3Title(e.target.value)}
-                      className="w-full font-bold text-xs bg-transparent border-b border-[var(--border-neutral)] pb-1"
-                    />
-                    <textarea
-                      rows={3}
-                      value={aboutPillar3Desc}
-                      onChange={(e) => setAboutPillar3Desc(e.target.value)}
-                      className="w-full text-[11px] bg-transparent text-[var(--content-secondary)] resize-none"
-                    />
-                  </div>
+                <div className="space-y-2 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
+                  <span className="text-[10px] font-mono font-bold uppercase text-neutral-400">Pillar 03</span>
+                  <input
+                    type="text"
+                    value={aboutPillar3Title}
+                    onChange={(e) => setAboutPillar3Title(e.target.value)}
+                    className="w-full rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-2 text-xs font-bold text-neutral-900 dark:text-neutral-100"
+                  />
+                  <textarea
+                    rows={3}
+                    value={aboutPillar3Desc}
+                    onChange={(e) => setAboutPillar3Desc(e.target.value)}
+                    className="w-full rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-2 text-[11px] text-neutral-700 dark:text-neutral-300"
+                  />
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* ========================================================================= */}
-        {/* 3. GUIDELINES CMS */}
-        {/* ========================================================================= */}
+        {/* 3. EDITORIAL GUIDELINES CMS */}
         {activeTab === "guidelines" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-[var(--border-neutral)]/60 pb-3">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-900 pb-3">
               <div>
-                <h3 className="text-sm font-bold text-[var(--content-primary)]">
-                  Curation & Submission Guidelines (`/guidelines`)
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                  Publishing & Visual Excellence Guidelines
                 </h3>
-                <p className="text-xs text-[var(--content-tertiary)]">
-                  Set the standard for approved monographs, resolution rules, and design ethics.
+                <p className="text-xs text-neutral-500">
+                  Define requirements for creator monograph submissions at /guidelines.
                 </p>
               </div>
               <Link
                 href="/guidelines"
                 target="_blank"
-                className="text-xs font-bold text-[var(--content-secondary)] hover:text-[var(--content-primary)] flex items-center gap-1"
+                className="text-xs font-bold text-neutral-500 hover:text-black dark:hover:text-white flex items-center gap-1"
               >
                 <span>Live View</span>
                 <ExternalLink className="h-3 w-3" />
               </Link>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Guidelines Section Title
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  Guidelines Headline
                 </label>
                 <input
                   type="text"
                   value={guidelinesHeadline}
                   onChange={(e) => setGuidelinesHeadline(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-4 py-2.5 text-xs font-bold text-[var(--content-primary)]"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-4 py-2 text-xs font-bold text-neutral-900 dark:text-neutral-100 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Minimum Image Resolution Requirement
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  Asset Minimum Resolution Standard
                 </label>
                 <input
                   type="text"
                   value={guidelinesMinResolution}
                   onChange={(e) => setGuidelinesMinResolution(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3.5 py-2 text-xs font-medium text-[var(--content-primary)]"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-4 py-2 text-xs font-mono font-bold text-neutral-900 dark:text-neutral-100 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Detailed Submission Requirements (Markdown Supported)
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  Publishing Rules & Protocol (Markdown supported)
                 </label>
                 <textarea
-                  rows={6}
+                  rows={8}
                   value={guidelinesText}
                   onChange={(e) => setGuidelinesText(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] p-3 text-xs text-[var(--content-primary)] font-mono leading-relaxed"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-3 text-xs font-mono text-neutral-900 dark:text-neutral-100 focus:outline-none leading-relaxed"
                 />
               </div>
             </div>
           </div>
         )}
 
-        {/* ========================================================================= */}
-        {/* 4. LEGAL & PRIVACY CMS */}
-        {/* ========================================================================= */}
+        {/* 4. LEGAL & POLICIES CMS */}
         {activeTab === "legal" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-[var(--border-neutral)]/60 pb-3">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-900 pb-3">
               <div>
-                <h3 className="text-sm font-bold text-[var(--content-primary)]">
-                  Privacy Policy & Terms of Service (`/privacy` & `/terms`)
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                  Legal, Privacy, & Terms of Service Content
                 </h3>
-                <p className="text-xs text-[var(--content-tertiary)]">
-                  Update legal clauses, copyright terms, and creator data protection statements.
+                <p className="text-xs text-neutral-500">
+                  Maintain creator IP sovereignty rules, privacy protection, and terms of service at /privacy and /terms.
                 </p>
               </div>
+              <span className="text-[11px] font-mono text-neutral-400">
+                Last Revision: {legalLastUpdated}
+              </span>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-5">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Privacy Policy Statement (`/privacy`)
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  Privacy Policy Core Clauses
                 </label>
                 <textarea
-                  rows={4}
+                  rows={5}
                   value={privacyPolicyText}
                   onChange={(e) => setPrivacyPolicyText(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] p-3 text-xs text-[var(--content-primary)] leading-relaxed"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-3 text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none leading-relaxed"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Terms of Service & License Agreement (`/terms`)
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  Terms of Service & Licensing Framework
                 </label>
                 <textarea
-                  rows={4}
+                  rows={5}
                   value={termsText}
                   onChange={(e) => setTermsText(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] p-3 text-xs text-[var(--content-primary)] leading-relaxed"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Legal Last Modified Date
-                </label>
-                <input
-                  type="text"
-                  value={legalLastUpdated}
-                  onChange={(e) => setLegalLastUpdated(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3.5 py-2 text-xs font-mono font-bold text-[var(--content-primary)]"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-3 text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none leading-relaxed"
                 />
               </div>
             </div>
           </div>
         )}
 
-        {/* ========================================================================= */}
-        {/* 5. GLOBAL ANNOUNCEMENT BANNER CMS */}
-        {/* ========================================================================= */}
+        {/* 5. TOP ANNOUNCEMENT RIBBON */}
         {activeTab === "announcement" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-[var(--border-neutral)]/60 pb-3">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-900 pb-3">
               <div>
-                <h3 className="text-sm font-bold text-[var(--content-primary)]">
-                  Global Sticky Top Announcement Bar
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                  Top Announcement Ribbon
                 </h3>
-                <p className="text-xs text-[var(--content-tertiary)]">
-                  Display high-visibility promotional ribbons across all public pages.
+                <p className="text-xs text-neutral-500">
+                  Global notification banner shown at the absolute top of the website.
                 </p>
               </div>
+            </div>
 
-              {/* Active Toggle */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[var(--content-primary)]">
-                  {isBannerActive ? "Banner Live" : "Banner Hidden"}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setIsBannerActive(!isBannerActive)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
-                    isBannerActive ? "bg-emerald-500" : "bg-[var(--bg-neutral)]"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "inline-block h-5 w-5 transform rounded-full bg-white shadow transition",
-                      isBannerActive ? "translate-x-5" : "translate-x-0"
-                    )}
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
+                <input
+                  type="checkbox"
+                  id="bannerToggle"
+                  checked={isBannerActive}
+                  onChange={(e) => setIsBannerActive(e.target.checked)}
+                  className="h-4 w-4 rounded border-neutral-300 dark:border-neutral-700 text-black dark:text-white focus:ring-0 cursor-pointer"
+                />
+                <label htmlFor="bannerToggle" className="text-xs font-bold text-neutral-900 dark:text-neutral-100 cursor-pointer">
+                  Activate Top Announcement Ribbon Across Website
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                    Badge Label
+                  </label>
+                  <input
+                    type="text"
+                    value={bannerBadge}
+                    onChange={(e) => setBannerBadge(e.target.value)}
+                    className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3.5 py-2 text-xs font-mono font-bold text-neutral-900 dark:text-neutral-100 focus:outline-none"
                   />
-                </button>
-              </div>
-            </div>
+                </div>
 
-            {/* Live Preview Box */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-mono uppercase tracking-wider text-[var(--content-tertiary)] font-bold">
-                Live Ribbon Visual Preview
-              </label>
-              <div className="flex items-center justify-center gap-2 rounded-xl bg-[var(--primary-forest-green)] dark:bg-[#090C09] border border-[var(--border-neutral)] text-white p-3 text-xs font-semibold shadow-xs">
-                <span className="rounded-full bg-[var(--accent)] text-black px-2 py-0.5 text-[10px] font-bold font-mono">
-                  {bannerBadge}
-                </span>
-                <span>{bannerMessage}</span>
-                <span className="text-[var(--accent)] underline ml-1">Learn More →</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Badge Tag Label
-                </label>
-                <input
-                  type="text"
-                  value={bannerBadge}
-                  onChange={(e) => setBannerBadge(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3.5 py-2 text-xs font-bold text-[var(--content-primary)]"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Link Target URL
-                </label>
-                <input
-                  type="text"
-                  value={bannerLink}
-                  onChange={(e) => setBannerLink(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3.5 py-2 text-xs font-medium text-[var(--content-primary)]"
-                />
-              </div>
-
-              <div className="sm:col-span-2 space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Announcement Body Text
-                </label>
-                <input
-                  type="text"
-                  value={bannerMessage}
-                  onChange={(e) => setBannerMessage(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-4 py-2.5 text-xs font-medium text-[var(--content-primary)]"
-                />
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                    Announcement Message
+                  </label>
+                  <input
+                    type="text"
+                    value={bannerMessage}
+                    onChange={(e) => setBannerMessage(e.target.value)}
+                    className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3.5 py-2 text-xs font-medium text-neutral-900 dark:text-neutral-100 focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* ========================================================================= */}
-        {/* 6. GLOBAL SEO & SOCIALS CMS */}
-        {/* ========================================================================= */}
+        {/* 6. GLOBAL SEO & SOCIAL CMS */}
         {activeTab === "seo" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-[var(--border-neutral)]/60 pb-3">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-900 pb-3">
               <div>
-                <h3 className="text-sm font-bold text-[var(--content-primary)]">
-                  Global Metadata, OpenGraph & Social Channels
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                  Global SEO Metadata & OpenGraph Social Links
                 </h3>
-                <p className="text-xs text-[var(--content-tertiary)]">
-                  Control search engine index snippets and community links in the footer.
+                <p className="text-xs text-neutral-500">
+                  Configure search engine snippet previews, title templates, and official social channels.
                 </p>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Default Platform Page Title
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  Default Title Tag
                 </label>
                 <input
                   type="text"
                   value={metaTitleTemplate}
                   onChange={(e) => setMetaTitleTemplate(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-4 py-2.5 text-xs font-bold text-[var(--content-primary)]"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-4 py-2 text-xs font-semibold text-neutral-900 dark:text-neutral-100 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Global Meta Description
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  Meta Description
                 </label>
                 <textarea
                   rows={3}
                   value={metaDescription}
                   onChange={(e) => setMetaDescription(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] p-3 text-xs text-[var(--content-primary)] leading-relaxed"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-3 text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none leading-relaxed"
                 />
               </div>
 
-              {/* Social URLs */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-[var(--border-neutral)]/60">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-mono text-[var(--content-tertiary)] font-bold">𝕏 (Twitter) Handle</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-neutral-100 dark:border-neutral-900">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                    Twitter / X Handle
+                  </label>
                   <input
                     type="text"
                     value={socialTwitterHandle}
                     onChange={(e) => setSocialTwitterHandle(e.target.value)}
-                    className="w-full rounded-[10px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3 py-1.5 text-xs font-mono text-[var(--content-primary)]"
+                    className="w-full rounded-[10px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3 py-1.5 text-xs text-neutral-900 dark:text-neutral-100"
                   />
                 </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] font-mono text-[var(--content-tertiary)] font-bold">Instagram URL</span>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                    Instagram URL
+                  </label>
                   <input
-                    type="url"
+                    type="text"
                     value={socialInstagramUrl}
                     onChange={(e) => setSocialInstagramUrl(e.target.value)}
-                    className="w-full rounded-[10px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3 py-1.5 text-xs font-mono text-[var(--content-primary)]"
+                    className="w-full rounded-[10px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3 py-1.5 text-xs text-neutral-900 dark:text-neutral-100"
                   />
                 </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] font-mono text-[var(--content-tertiary)] font-bold">Discord Invite</span>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                    Discord Community URL
+                  </label>
                   <input
-                    type="url"
+                    type="text"
                     value={socialDiscordUrl}
                     onChange={(e) => setSocialDiscordUrl(e.target.value)}
-                    className="w-full rounded-[10px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3 py-1.5 text-xs font-mono text-[var(--content-primary)]"
+                    className="w-full rounded-[10px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3 py-1.5 text-xs text-neutral-900 dark:text-neutral-100"
                   />
                 </div>
               </div>

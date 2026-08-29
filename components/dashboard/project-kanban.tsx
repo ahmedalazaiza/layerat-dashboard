@@ -41,21 +41,18 @@ export function ProjectKanban({ projects }: ProjectKanbanProps) {
       id: "drafts",
       title: "Draft Monographs",
       badge: `${draftProjects.length}`,
-      color: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
       items: draftProjects,
     },
     {
       id: "live",
       title: "Live Showcase",
       badge: `${liveProjects.length}`,
-      color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
       items: liveProjects,
     },
     {
       id: "featured",
       title: "Featured Staff Picks",
       badge: `${featuredProjects.length}`,
-      color: "bg-[var(--accent)]/15 text-[var(--accent)] border-[var(--accent)]/40",
       items: featuredProjects,
     },
   ];
@@ -80,152 +77,129 @@ export function ProjectKanban({ projects }: ProjectKanbanProps) {
         {columns.map((col) => (
           <div
             key={col.id}
-            className="flex flex-col rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-4 shadow-xs min-h-[500px]"
+            className="flex flex-col rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-4 shadow-xs min-h-[500px]"
           >
             {/* Column Header */}
-            <div className="flex items-center justify-between border-b border-[var(--border-neutral)]/60 pb-3">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-900 pb-3">
               <div className="flex items-center gap-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--content-primary)]">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
                   {col.title}
                 </h3>
-                <span
-                  className={cn(
-                    "rounded-full border px-2 py-0.5 text-[10px] font-mono font-bold",
-                    col.color
-                  )}
-                >
+                <span className="rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 px-2 py-0.5 text-[10px] font-mono font-bold">
                   {col.badge}
                 </span>
               </div>
 
-              {col.id === "drafts" && (
-                <Link
-                  href="/me/projects/new"
-                  className="rounded-lg p-1 text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors"
-                  title="Create new draft"
-                >
-                  <Plus className="h-4 w-4" />
-                </Link>
-              )}
+              <Link
+                href="/me/projects/new"
+                className="h-6 w-6 rounded-md flex items-center justify-center text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors"
+                title="Create Monograph"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </Link>
             </div>
 
-            {/* Column Items */}
-            <div className="mt-3 flex-1 space-y-3 overflow-y-auto max-h-[calc(100vh-320px)] pr-1">
+            {/* Cards Column */}
+            <div className="mt-4 flex-1 space-y-3 overflow-y-auto max-h-[700px] pr-1">
               {col.items.length === 0 ? (
-                <div className="flex h-40 flex-col items-center justify-center rounded-[18px] border border-dashed border-[var(--border-neutral)] text-center p-4 text-[11px] text-[var(--content-tertiary)]">
-                  No projects in this stage.
+                <div className="flex h-32 items-center justify-center rounded-[16px] border border-dashed border-neutral-200 dark:border-neutral-800 text-xs text-neutral-400">
+                  No monographs in this state
                 </div>
               ) : (
                 col.items.map((project) => (
                   <div
                     key={project.id}
-                    className="group relative rounded-[18px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] p-3.5 shadow-2xs transition-all duration-200 hover:border-[var(--content-primary)] hover:shadow-md"
+                    className="group relative flex flex-col rounded-[18px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/60 p-3.5 transition-all hover:border-black dark:hover:border-white shadow-2xs space-y-3"
                   >
-                    {/* Top: Cover Thumbnail & Quick Open */}
-                    <div className="relative h-28 w-full overflow-hidden rounded-[12px] bg-[var(--bg-neutral)] border border-[var(--border-neutral)]">
-                      <Image
-                        src={project.coverImage || "/placeholder.jpg"}
-                        alt={project.title}
-                        fill
-                        sizes="300px"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <div className="absolute top-2 left-2">
-                        <span className="rounded-full bg-black/60 backdrop-blur-md px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
-                          {project.medium || "Image"}
+                    {/* Thumbnail & Title */}
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-neutral-200 dark:bg-neutral-800">
+                        <Image
+                          src={project.coverImage || "/placeholder.jpg"}
+                          alt={project.title}
+                          fill
+                          sizes="80px"
+                          className="object-cover"
+                        />
+                      </div>
+
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="font-bold text-xs text-neutral-900 dark:text-neutral-100 truncate" title={project.title}>
+                          {project.title}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 font-mono truncate">
+                          <span>{project.category}</span>
+                          <span>•</span>
+                          <span className="truncate">@{project.creator?.username || "creator"}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer Controls & Move Arrows */}
+                    <div className="flex items-center justify-between border-t border-neutral-200/60 dark:border-neutral-800/60 pt-2.5 text-xs">
+                      {/* Metric info */}
+                      <div className="flex items-center gap-2 font-mono text-[10px] text-neutral-400">
+                        <span className="flex items-center gap-0.5">
+                          <Heart className="h-3 w-3" />
+                          <span>{project.appreciations || 0}</span>
                         </span>
                       </div>
-                      {project.featured && (
-                        <div className="absolute top-2 right-2">
-                          <span className="rounded-full bg-[var(--accent)] text-black px-2 py-0.5 text-[9px] font-bold shadow-xs flex items-center gap-1">
-                            <Star className="h-2.5 w-2.5 fill-current" />
-                            <span>Staff Pick</span>
-                          </span>
-                        </div>
-                      )}
-                    </div>
 
-                    {/* Title & Category */}
-                    <div className="mt-3 space-y-1">
-                      <div className="font-bold text-xs text-[var(--content-primary)] line-clamp-2">
-                        {project.title}
-                      </div>
-                      <div className="flex items-center justify-between text-[11px] text-[var(--content-tertiary)]">
-                        <span className="truncate max-w-[130px]">{project.category}</span>
-                        <div className="flex items-center gap-2 font-mono">
-                          <span className="flex items-center gap-0.5 text-rose-500 font-semibold">
-                            <Heart className="h-3 w-3 fill-current" />
-                            {project.appreciations || 0}
-                          </span>
-                          <span className="flex items-center gap-0.5 text-amber-500 font-semibold">
-                            <MessageSquare className="h-3 w-3" />
-                            {project.comments?.length || 0}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bottom Action Bar: Move to status & Edit triggers */}
-                    <div className="mt-3 flex items-center justify-between border-t border-[var(--border-neutral)]/60 pt-2.5 text-[11px]">
-                      {/* Move to actions */}
+                      {/* Action Buttons */}
                       <div className="flex items-center gap-1">
-                        {col.id !== "drafts" && (
+                        {/* Move Left */}
+                        {col.id === "live" && (
                           <button
                             type="button"
                             onClick={() => handleMoveTo(project, "drafts")}
-                            className="rounded px-1.5 py-0.5 text-[10px] font-bold text-[var(--content-tertiary)] hover:bg-[var(--bg-neutral)] hover:text-amber-500 transition-colors cursor-pointer"
+                            className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 hover:text-black dark:hover:text-white cursor-pointer"
                             title="Move to Drafts"
                           >
-                            Draft
+                            <ArrowLeft className="h-3.5 w-3.5" />
                           </button>
                         )}
-                        {col.id !== "live" && (
+                        {col.id === "featured" && (
                           <button
                             type="button"
                             onClick={() => handleMoveTo(project, "live")}
-                            className="rounded px-1.5 py-0.5 text-[10px] font-bold text-[var(--content-tertiary)] hover:bg-[var(--bg-neutral)] hover:text-emerald-500 transition-colors cursor-pointer"
-                            title="Publish Live"
+                            className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 hover:text-black dark:hover:text-white cursor-pointer"
+                            title="Demote to Regular Live"
                           >
-                            Live
+                            <ArrowLeft className="h-3.5 w-3.5" />
                           </button>
                         )}
-                        {col.id !== "featured" && (
-                          <button
-                            type="button"
-                            onClick={() => handleMoveTo(project, "featured")}
-                            className="rounded px-1.5 py-0.5 text-[10px] font-bold text-[var(--content-tertiary)] hover:bg-[var(--bg-neutral)] hover:text-[var(--accent)] transition-colors cursor-pointer"
-                            title="Make Featured Staff Pick"
-                          >
-                            Feature
-                          </button>
-                        )}
-                      </div>
 
-                      {/* Edit buttons */}
-                      <div className="flex items-center gap-1">
+                        {/* Quick Edit */}
                         <button
                           type="button"
                           onClick={() => setEditingProject(project)}
-                          className="rounded-md p-1 text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
+                          className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 hover:text-black dark:hover:text-white cursor-pointer"
                           title="Quick Edit"
                         >
                           <Edit3 className="h-3.5 w-3.5" />
                         </button>
-                        <Link
-                          href={`/me/projects/${project.id}`}
-                          className="rounded-md p-1 text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
-                          title="Full Editor"
-                        >
-                          <FileText className="h-3.5 w-3.5" />
-                        </Link>
-                        <Link
-                          href={`/project/${project.slug}`}
-                          target="_blank"
-                          className="rounded-md p-1 text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
-                          title="View Live"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </Link>
+
+                        {/* Move Right */}
+                        {col.id === "drafts" && (
+                          <button
+                            type="button"
+                            onClick={() => handleMoveTo(project, "live")}
+                            className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 hover:text-black dark:hover:text-white cursor-pointer"
+                            title="Publish Live"
+                          >
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                        {col.id === "live" && (
+                          <button
+                            type="button"
+                            onClick={() => handleMoveTo(project, "featured")}
+                            className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 hover:text-black dark:hover:text-white cursor-pointer"
+                            title="Promote to Staff Pick"
+                          >
+                            <Star className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -237,11 +211,13 @@ export function ProjectKanban({ projects }: ProjectKanbanProps) {
       </div>
 
       {/* Quick Edit Drawer */}
-      <QuickEditDrawer
-        project={editingProject}
-        isOpen={!!editingProject}
-        onClose={() => setEditingProject(null)}
-      />
+      {editingProject && (
+        <QuickEditDrawer
+          project={editingProject}
+          isOpen={!!editingProject}
+          onClose={() => setEditingProject(null)}
+        />
+      )}
     </>
   );
 }

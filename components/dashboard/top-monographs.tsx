@@ -1,17 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Project } from "@/lib/types";
-import { bricolage } from "@/lib/fonts";
 import {
   Trophy,
   Heart,
   MessageSquare,
-  ExternalLink,
-  Star,
-  Eye,
   ArrowUpRight,
   Sparkles,
 } from "lucide-react";
@@ -23,24 +19,23 @@ interface TopMonographsProps {
 }
 
 export function TopMonographs({ projects }: TopMonographsProps) {
-  // Sort projects by appreciations descending
   const topProjects = [...projects]
     .sort((a, b) => (b.appreciations || 0) - (a.appreciations || 0))
     .slice(0, 5);
 
   return (
-    <div className="rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-6 shadow-xs">
+    <div className="rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-6 shadow-xs">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--border-neutral)]/60 pb-4">
+      <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-900 pb-4">
         <div className="flex items-center gap-2">
-          <Trophy className="h-4 w-4 text-[var(--accent)]" />
-          <h2 className="text-sm font-bold text-[var(--content-primary)]">
+          <Trophy className="h-4 w-4 text-neutral-900 dark:text-neutral-100" />
+          <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
             Top Performing Monographs
           </h2>
         </div>
         <Link
           href="/dashboard/projects"
-          className="text-xs font-bold text-[var(--content-secondary)] hover:text-[var(--content-primary)] flex items-center gap-1 transition-colors"
+          className="text-xs font-bold text-neutral-500 hover:text-black dark:hover:text-white flex items-center gap-1 transition-colors"
         >
           <span>View All Projects</span>
           <ArrowUpRight className="h-3.5 w-3.5" />
@@ -48,24 +43,24 @@ export function TopMonographs({ projects }: TopMonographsProps) {
       </div>
 
       {/* Projects List */}
-      <div className="mt-4 divide-y divide-[var(--border-neutral)]/50">
+      <div className="mt-4 divide-y divide-neutral-100 dark:divide-neutral-900">
         {topProjects.length === 0 ? (
-          <div className="py-8 text-center text-xs text-[var(--content-tertiary)]">
+          <div className="py-8 text-center text-xs text-neutral-400">
             No projects available yet.
           </div>
         ) : (
           topProjects.map((project, idx) => (
             <div
               key={project.id}
-              className="group flex items-center justify-between gap-4 py-3.5 transition-colors hover:bg-[var(--bg-neutral)]/40 px-2 rounded-[16px]"
+              className="group flex items-center justify-between gap-4 py-3.5 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900/50 px-2 rounded-[16px]"
             >
               {/* Left: Rank, Thumbnail, & Details */}
               <div className="flex items-center gap-3.5 min-w-0">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--bg-neutral)] font-mono text-xs font-bold text-[var(--content-secondary)]">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-900 font-mono text-xs font-bold text-neutral-700 dark:text-neutral-300">
                   {idx + 1}
                 </span>
 
-                <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-[var(--bg-neutral)] border border-[var(--border-neutral)]">
+                <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
                   <Image
                     src={project.coverImage || "/placeholder.jpg"}
                     alt={project.title}
@@ -78,12 +73,12 @@ export function TopMonographs({ projects }: TopMonographsProps) {
                 <div className="min-w-0">
                   <Link
                     href={`/project/${project.slug}`}
-                    className="block truncate text-xs font-bold text-[var(--content-primary)] hover:text-[var(--accent)] transition-colors"
+                    className="block truncate text-xs font-bold text-neutral-900 dark:text-neutral-100 hover:opacity-75 transition-opacity"
                   >
                     {project.title}
                   </Link>
 
-                  <div className="mt-1 flex items-center gap-2 text-[11px] text-[var(--content-tertiary)]">
+                  <div className="mt-1 flex items-center gap-2 text-[11px] text-neutral-400">
                     <span className="truncate">{project.category}</span>
                     <span>•</span>
                     <div className="flex items-center gap-1">
@@ -104,27 +99,25 @@ export function TopMonographs({ projects }: TopMonographsProps) {
                 </div>
               </div>
 
-              {/* Right: Metrics & Actions */}
-              <div className="flex items-center gap-4 shrink-0">
-                <div className="flex items-center gap-3 text-xs font-mono font-semibold text-[var(--content-secondary)]">
+              {/* Right: Metrics & Badges */}
+              <div className="flex items-center gap-3 shrink-0">
+                {project.featured && (
+                  <span className="rounded-full bg-black text-white dark:bg-white dark:text-black px-2 py-0.5 text-[10px] font-bold flex items-center gap-1">
+                    <Sparkles className="h-2.5 w-2.5" />
+                    <span className="hidden sm:inline">Staff Pick</span>
+                  </span>
+                )}
+
+                <div className="flex items-center gap-2 text-xs font-mono text-neutral-600 dark:text-neutral-400">
                   <div className="flex items-center gap-1">
-                    <Heart className="h-3.5 w-3.5 text-rose-500 fill-rose-500/20" />
+                    <Heart className="h-3.5 w-3.5" />
                     <span>{project.appreciations || 0}</span>
                   </div>
-                  <div className="hidden sm:flex items-center gap-1">
-                    <MessageSquare className="h-3.5 w-3.5 text-amber-500" />
+                  <div className="flex items-center gap-1 hidden sm:flex">
+                    <MessageSquare className="h-3.5 w-3.5" />
                     <span>{project.comments?.length || 0}</span>
                   </div>
                 </div>
-
-                <Link
-                  href={`/project/${project.slug}`}
-                  target="_blank"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
-                  title="Open live case study"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </Link>
               </div>
             </div>
           ))

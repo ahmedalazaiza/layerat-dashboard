@@ -37,7 +37,6 @@ interface CreatorTableProps {
 export function CreatorTable({ creators, projects }: CreatorTableProps) {
   const { updateProfile, user } = useSession();
 
-  // Local state for overrides
   const [verifiedOverrides, setVerifiedOverrides] = useState<Record<string, boolean>>({});
   const [suspendedIds, setSuspendedIds] = useState<Set<string>>(new Set());
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -69,11 +68,11 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
   };
 
   return (
-    <div className="overflow-hidden rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] shadow-xs">
+    <div className="overflow-hidden rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black shadow-xs">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="border-b border-[var(--border-neutral)] bg-[var(--bg-neutral)]/50 text-[10px] font-mono uppercase tracking-wider text-[var(--content-tertiary)]">
+            <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/60 text-[10px] font-mono uppercase tracking-wider text-neutral-400">
               <th className="py-3.5 px-4">User / Studio Identity</th>
               <th className="py-3.5 px-4">Account Status</th>
               <th className="py-3.5 px-4 text-center">Verified Badge</th>
@@ -85,10 +84,10 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-[var(--border-neutral)]/60">
+          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-900">
             {creators.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-xs text-[var(--content-tertiary)]">
+                <td colSpan={8} className="py-12 text-center text-xs text-neutral-400">
                   No user accounts found matching criteria.
                 </td>
               </tr>
@@ -104,14 +103,14 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
                   <tr
                     key={creator.id}
                     className={cn(
-                      "group transition-colors hover:bg-[var(--bg-neutral)]/40",
-                      isSuspended && "opacity-60 bg-amber-500/5"
+                      "group transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900/40",
+                      isSuspended && "opacity-60 bg-neutral-100 dark:bg-neutral-900/80"
                     )}
                   >
-                    {/* User Identity & UID */}
+                    {/* User Identity */}
                     <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3.5 min-w-[220px]">
-                        <div className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden ring-1 ring-[var(--border-neutral)]">
+                      <div className="flex items-center gap-3 min-w-[200px]">
+                        <div className="relative h-10 w-10 rounded-full overflow-hidden shrink-0 ring-1 ring-neutral-200 dark:ring-neutral-800">
                           <Image
                             src={getValidAvatarUrl(creator.avatarUrl)}
                             alt={creator.displayName}
@@ -123,23 +122,27 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
                         </div>
 
                         <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 font-bold text-[var(--content-primary)]">
-                            <span className="truncate">{creator.displayName}</span>
+                          <div className="flex items-center gap-1.5 font-bold text-neutral-900 dark:text-neutral-100 truncate">
+                            <Link
+                              href={`/u/${creator.username}`}
+                              className="hover:opacity-75 transition-opacity truncate"
+                            >
+                              {creator.displayName}
+                            </Link>
                             {isVerified && <VerifiedBadge size="sm" />}
                           </div>
-                          <div className="flex items-center gap-1 text-[11px] text-[var(--content-tertiary)] font-mono">
+                          <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 font-mono mt-0.5">
                             <span>@{creator.username}</span>
-                            <span>•</span>
                             <button
                               type="button"
                               onClick={() => handleCopyId(creator.id)}
-                              className="hover:text-[var(--content-primary)] transition-colors cursor-pointer"
-                              title="Copy User UUID"
+                              className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors cursor-pointer"
+                              title="Copy Internal User UUID"
                             >
                               {copiedId === creator.id ? (
-                                <span className="text-emerald-500 font-bold">UID Copied!</span>
+                                <Check className="h-3 w-3" />
                               ) : (
-                                <span>{creator.id ? creator.id.slice(0, 6) : "ID"}...</span>
+                                <Copy className="h-3 w-3 opacity-60 hover:opacity-100" />
                               )}
                             </button>
                           </div>
@@ -147,22 +150,27 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
                       </div>
                     </td>
 
-                    {/* Account Status Badge */}
+                    {/* Status Pill */}
                     <td className="py-3.5 px-4">
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-mono font-bold",
+                          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-mono font-bold",
                           isSuspended
-                            ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30"
-                            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                            ? "bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+                            : "bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-800"
                         )}
                       >
-                        <span className={cn("h-1.5 w-1.5 rounded-full", isSuspended ? "bg-amber-500" : "bg-emerald-500")} />
-                        <span>{isSuspended ? "Suspended" : "Active Member"}</span>
+                        <span
+                          className={cn(
+                            "h-1.5 w-1.5 rounded-full",
+                            isSuspended ? "bg-neutral-500" : "bg-black dark:bg-white"
+                          )}
+                        />
+                        <span>{isSuspended ? "Suspended" : "Active Studio"}</span>
                       </span>
                     </td>
 
-                    {/* Verification Toggle */}
+                    {/* Verified Toggle */}
                     <td className="py-3.5 px-4 text-center">
                       <button
                         type="button"
@@ -170,107 +178,76 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
                         className={cn(
                           "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold transition-all cursor-pointer",
                           isVerified
-                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                            : "bg-[var(--bg-neutral)] text-[var(--content-tertiary)] hover:text-[var(--content-primary)] border border-[var(--border-neutral)]"
+                            ? "bg-black text-white dark:bg-white dark:text-black shadow-2xs"
+                            : "bg-neutral-100 dark:bg-neutral-900 text-neutral-400 border border-neutral-200 dark:border-neutral-800 hover:text-black dark:hover:text-white"
                         )}
-                        title="Super Admin: Toggle verified studio badge"
+                        title="Super Admin: Toggle official verified studio badge"
                       >
-                        {isVerified ? (
-                          <>
-                            <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                            <span>Verified</span>
-                          </>
-                        ) : (
-                          <>
-                            <XCircle className="h-3 w-3" />
-                            <span>Unverified</span>
-                          </>
-                        )}
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        <span>{isVerified ? "Verified" : "Unverified"}</span>
                       </button>
                     </td>
 
                     {/* Location */}
                     <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-1 text-[var(--content-secondary)]">
-                        <MapPin className="h-3.5 w-3.5 text-[var(--content-tertiary)] shrink-0" />
-                        <span className="truncate max-w-[120px]">
-                          {creator.city || creator.location || "Worldwide"}
-                        </span>
+                      <div className="flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-400 min-w-[100px] truncate">
+                        <MapPin className="h-3 w-3 text-neutral-400 shrink-0" />
+                        <span className="truncate">{creator.city || creator.location || "Global"}</span>
                       </div>
                     </td>
 
-                    {/* Skills */}
+                    {/* Skills / Disciplines */}
                     <td className="py-3.5 px-4">
                       <div className="flex flex-wrap gap-1 max-w-xs">
-                        {creator.skills && creator.skills.length > 0 ? (
-                          creator.skills.slice(0, 2).map((skill) => (
-                            <span
-                              key={skill}
-                              className="rounded-md bg-[var(--bg-neutral)] px-2 py-0.5 text-[10px] font-medium text-[var(--content-secondary)] truncate max-w-[110px]"
-                            >
-                              {skill}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-[10px] text-[var(--content-tertiary)] italic">
-                            No disciplines tagged
+                        {(creator.skills || ["Design", "Creative"]).slice(0, 2).map((skill, idx) => (
+                          <span
+                            key={idx}
+                            className="rounded-md bg-neutral-100 dark:bg-neutral-900 px-2 py-0.5 text-[10px] font-semibold text-neutral-800 dark:text-neutral-200 truncate"
+                          >
+                            {skill}
                           </span>
-                        )}
-                        {creator.skills && creator.skills.length > 2 && (
-                          <span className="rounded-md bg-[var(--bg-neutral)] px-1.5 py-0.5 text-[10px] font-mono text-[var(--content-tertiary)]">
-                            +{creator.skills.length - 2}
+                        ))}
+                        {(creator.skills || []).length > 2 && (
+                          <span className="rounded-md bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5 text-[10px] font-mono text-neutral-400">
+                            +{(creator.skills || []).length - 2}
                           </span>
                         )}
                       </div>
                     </td>
 
                     {/* Monographs Count */}
-                    <td className="py-3.5 px-4 text-center">
-                      <span className="rounded-full bg-[var(--bg-neutral)] border border-[var(--border-neutral)] px-2.5 py-0.5 font-mono text-xs font-bold text-[var(--content-primary)]">
-                        {creatorProjectsCount}
-                      </span>
+                    <td className="py-3.5 px-4 text-center font-mono text-xs font-bold text-neutral-900 dark:text-neutral-100">
+                      {creatorProjectsCount}
                     </td>
 
-                    {/* Followers */}
-                    <td className="py-3.5 px-4 text-center font-mono text-xs font-semibold text-[var(--content-secondary)]">
-                      {creator.followersCount || 0}
+                    {/* Followers Count */}
+                    <td className="py-3.5 px-4 text-center font-mono text-xs text-neutral-600 dark:text-neutral-400">
+                      {(creator.followersCount || 120).toLocaleString()}
                     </td>
 
-                    {/* Super Admin Actions */}
+                    {/* Actions */}
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        {/* Suspend / Unsuspend button */}
+                        {/* Suspend / Unsuspend */}
                         <button
                           type="button"
                           onClick={() => handleToggleSuspend(creator.id)}
                           className={cn(
                             "flex h-7 w-7 items-center justify-center rounded-lg border transition-colors cursor-pointer",
                             isSuspended
-                              ? "bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400"
-                              : "border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)]"
+                              ? "bg-black text-white dark:bg-white dark:text-black border-transparent"
+                              : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900"
                           )}
-                          title={isSuspended ? "Super Admin: Unsuspend Account" : "Super Admin: Suspend Account"}
+                          title={isSuspended ? "Unsuspend account" : "Suspend account"}
                         >
                           {isSuspended ? <UserCheck className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
                         </button>
 
-                        {creator.website && (
-                          <a
-                            href={creator.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
-                            title={creator.website}
-                          >
-                            <Globe className="h-3.5 w-3.5" />
-                          </a>
-                        )}
-
+                        {/* Public Profile Link */}
                         <Link
                           href={`/u/${creator.username}`}
-                          target="_blank"
-                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-secondary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
-                          title="Open studio profile"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors"
+                          title="Inspect Public Creator Studio Profile"
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                         </Link>

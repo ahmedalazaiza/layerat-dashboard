@@ -9,24 +9,14 @@ import {
   Database,
   RefreshCw,
   Download,
-  CheckCircle2,
-  ShieldCheck,
-  ShieldAlert,
   Shield,
   Moon,
   Sun,
   Laptop,
-  Palette,
-  FileCode,
-  HardDrive,
   Save,
   Check,
-  AlertTriangle,
-  Loader2,
-  Lock,
-  Radio,
   Server,
-  Activity,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -98,356 +88,261 @@ export function PlatformSettingsView() {
     downloadAnchor.remove();
   };
 
-  const handleExportCSV = () => {
-    const headers = ["ID", "Title", "Slug", "Category", "SubCategory", "Medium", "Published", "Appreciations", "Creator"];
-    const rows = projects.map((p) => [
-      p.id,
-      `"${p.title.replace(/"/g, '""')}"`,
-      p.slug,
-      `"${p.category}"`,
-      `"${p.subCategory || ""}"`,
-      p.medium,
-      p.published !== false ? "TRUE" : "FALSE",
-      p.appreciations || 0,
-      `"${p.creator?.displayName || ""}"`,
-    ]);
-
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `layerat-monographs-master-${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+  const handleSaveSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 2500);
   };
 
   return (
     <div className="space-y-6">
-      {/* Super Admin Status Banner */}
-      <div className="rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Super Admin Top Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-4 sm:p-5 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--primary-forest-green)] dark:bg-[var(--accent)] text-white dark:text-black font-bold">
-            <Shield className="h-5 w-5 fill-current" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black font-bold">
+            <Shield className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-[var(--content-primary)]">
-                Super Admin Master Governance & Security Controls
+              <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
+                Platform Security & System Administration
               </h2>
-              <span className="rounded bg-[var(--chip-bg)] text-[var(--chip-fg)] px-2 py-0.2 text-[9px] font-mono uppercase font-bold">
-                Root Level
+              <span className="rounded bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 px-2 py-0.2 text-[9px] font-mono font-bold uppercase">
+                Root Admin
               </span>
             </div>
-            <p className="text-xs text-[var(--content-secondary)] mt-0.5">
-              Elevated credentials active. All changes apply globally to the production database and public showcase.
+            <p className="text-xs text-neutral-500">
+              Manage database backups, in-memory query caches, registration gates, and system maintenance.
             </p>
           </div>
         </div>
 
-        {/* Maintenance Mode Toggle Switch */}
-        <div className="flex items-center gap-3 bg-[var(--bg-neutral)] p-2.5 rounded-[16px] border border-[var(--border-neutral)] shrink-0">
-          <div>
-            <div className="text-xs font-bold text-[var(--content-primary)] flex items-center gap-1.5">
-              <Lock className="h-3.5 w-3.5 text-[var(--content-secondary)]" />
-              <span>Maintenance Mode</span>
-            </div>
-            <div className="text-[10px] text-[var(--content-tertiary)]">
-              {isMaintenanceMode ? "Platform in read-only lock" : "Platform live to public"}
-            </div>
-          </div>
-
+        {/* Save Button */}
+        <div className="flex items-center gap-2 shrink-0">
+          {isSaved && (
+            <span className="flex items-center gap-1 text-xs font-mono font-bold text-neutral-900 dark:text-neutral-100">
+              <Check className="h-4 w-4" />
+              <span>Saved!</span>
+            </span>
+          )}
           <button
             type="button"
-            onClick={() => setIsMaintenanceMode(!isMaintenanceMode)}
-            className={cn(
-              "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-              isMaintenanceMode ? "bg-[var(--chip-bg)]" : "bg-[var(--bg-elevated)] border border-[var(--border-neutral)]"
-            )}
+            onClick={handleSaveSettings}
+            className="flex items-center gap-2 rounded-full bg-black text-white dark:bg-white dark:text-black px-5 py-2 text-xs font-bold hover:bg-neutral-800 dark:hover:bg-neutral-200 active:scale-95 transition-all shadow-xs cursor-pointer"
           >
-            <span
-              className={cn(
-                "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white dark:bg-[var(--accent)] shadow ring-0 transition duration-200 ease-in-out",
-                isMaintenanceMode ? "translate-x-5" : "translate-x-0"
-              )}
-            />
+            <Save className="h-4 w-4" />
+            <span>Save System Config</span>
           </button>
         </div>
       </div>
 
-      {/* 2-Column Settings Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column: Platform Branding & Registration Policies */}
-        <div className="space-y-6">
-          {/* General Platform Settings Card */}
-          <div className="rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-6 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 border-b border-[var(--border-neutral)]/60 pb-3">
-              <Settings className="h-4 w-4 text-[var(--accent)]" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--content-primary)]">
-                Global Platform Identity & Domains
-              </h3>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: General Configuration (Span 6) */}
+        <div className="lg:col-span-6 space-y-6">
+          {/* General Platform Parameters */}
+          <div className="rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-6 shadow-xs space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 border-b border-neutral-100 dark:border-neutral-900 pb-3">
+              Platform Domain & Canonical Routing
+            </h3>
 
-            <div className="space-y-3.5">
+            <div className="space-y-3">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Platform Showcase Name
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  Platform Display Title
                 </label>
                 <input
                   type="text"
                   value={platformName}
                   onChange={(e) => setPlatformName(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3.5 py-2 text-xs font-medium text-[var(--content-primary)] focus:border-[var(--content-primary)] focus:outline-none"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3.5 py-2 text-xs font-semibold text-neutral-900 dark:text-neutral-100 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
-                  Super Admin / Editorial Email
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  Official Editorial Contact Email
                 </label>
                 <input
                   type="email"
                   value={editorialEmail}
                   onChange={(e) => setEditorialEmail(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3.5 py-2 text-xs font-medium text-[var(--content-primary)] focus:border-[var(--content-primary)] focus:outline-none"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3.5 py-2 text-xs font-mono text-neutral-900 dark:text-neutral-100 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--content-secondary)]">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
                   Canonical Production Domain
                 </label>
                 <input
                   type="url"
                   value={canonicalDomain}
                   onChange={(e) => setCanonicalDomain(e.target.value)}
-                  className="w-full rounded-[12px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] px-3.5 py-2 text-xs font-medium text-[var(--content-primary)] focus:border-[var(--content-primary)] focus:outline-none"
+                  className="w-full rounded-[12px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3.5 py-2 text-xs font-mono text-neutral-900 dark:text-neutral-100 focus:outline-none"
                 />
-              </div>
-
-              {/* Toggles */}
-              <div className="space-y-2.5 pt-2 border-t border-[var(--border-neutral)]/60">
-                <div className="flex items-center justify-between text-xs">
-                  <div>
-                    <div className="font-semibold text-[var(--content-primary)]">Public Creator Signups</div>
-                    <div className="text-[10px] text-[var(--content-tertiary)]">Allow new studio registrations</div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setAllowPublicRegistrations(!allowPublicRegistrations)}
-                    className={cn(
-                      "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
-                      allowPublicRegistrations ? "bg-emerald-500" : "bg-[var(--bg-neutral)]"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "inline-block h-4 w-4 transform rounded-full bg-white shadow transition",
-                        allowPublicRegistrations ? "translate-x-4" : "translate-x-0"
-                      )}
-                    />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between text-xs">
-                  <div>
-                    <div className="font-semibold text-[var(--content-primary)]">Strict Studio Verification</div>
-                    <div className="text-[10px] text-[var(--content-tertiary)]">Require Super Admin badge approval</div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setRequireManualVerification(!requireManualVerification)}
-                    className={cn(
-                      "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
-                      requireManualVerification ? "bg-emerald-500" : "bg-[var(--bg-neutral)]"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "inline-block h-4 w-4 transform rounded-full bg-white shadow transition",
-                        requireManualVerification ? "translate-x-4" : "translate-x-0"
-                      )}
-                    />
-                  </button>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsSaved(true);
-                    setTimeout(() => setIsSaved(false), 2000);
-                  }}
-                  className="flex items-center gap-2 rounded-full bg-[var(--primary-forest-green)] dark:bg-[var(--accent)] px-4 py-2 text-xs font-bold text-white dark:text-[var(--primary-forest-green)] hover:opacity-90 active:scale-95 transition-all shadow-xs cursor-pointer"
-                >
-                  {isSaved ? (
-                    <>
-                      <Check className="h-3.5 w-3.5" />
-                      <span>Configuration Saved</span>
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-3.5 w-3.5" />
-                      <span>Save Platform Settings</span>
-                    </>
-                  )}
-                </button>
               </div>
             </div>
           </div>
 
-          {/* Theme & Appearance Card */}
-          <div className="rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-6 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 border-b border-[var(--border-neutral)]/60 pb-3">
-              <Palette className="h-4 w-4 text-[var(--accent)]" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--content-primary)]">
-                Default Platform Theme
-              </h3>
-            </div>
+          {/* User Registration & Access Gates */}
+          <div className="rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-6 shadow-xs space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 border-b border-neutral-100 dark:border-neutral-900 pb-3">
+              Access Governance & Security Gates
+            </h3>
 
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: "light", label: "Light", icon: Sun },
-                { value: "dark", label: "Dark Obsidian", icon: Moon },
-                { value: "system", label: "System Sync", icon: Laptop },
-              ].map((opt) => {
-                const Icon = opt.icon;
-                const isSelected = theme === opt.value;
+            <div className="space-y-3">
+              <label className="flex items-start gap-3 p-3 rounded-[14px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={allowPublicRegistrations}
+                  onChange={(e) => setAllowPublicRegistrations(e.target.checked)}
+                  className="mt-0.5 rounded border-neutral-300 dark:border-neutral-700 text-black dark:text-white focus:ring-0"
+                />
+                <div>
+                  <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
+                    Open Public Creator Onboarding
+                  </div>
+                  <div className="text-[11px] text-neutral-500">
+                    Allow new designers and studios to create free public accounts.
+                  </div>
+                </div>
+              </label>
 
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setTheme(opt.value as any)}
-                    className={cn(
-                      "flex flex-col items-center justify-center gap-2 p-3 rounded-[14px] border text-xs font-bold transition-all cursor-pointer",
-                      isSelected
-                        ? "bg-[var(--chip-bg)] text-[var(--chip-fg)] border-transparent shadow-xs"
-                        : "border-[var(--border-neutral)] bg-[var(--bg-neutral)] text-[var(--content-secondary)] hover:text-[var(--content-primary)]"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{opt.label}</span>
-                  </button>
-                );
-              })}
+              <label className="flex items-start gap-3 p-3 rounded-[14px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={requireManualVerification}
+                  onChange={(e) => setRequireManualVerification(e.target.checked)}
+                  className="mt-0.5 rounded border-neutral-300 dark:border-neutral-700 text-black dark:text-white focus:ring-0"
+                />
+                <div>
+                  <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
+                    Manual Verified Studio Approval
+                  </div>
+                  <div className="text-[11px] text-neutral-500">
+                    Require Super Admin approval before granting official verification badges.
+                  </div>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 p-3 rounded-[14px] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isMaintenanceMode}
+                  onChange={(e) => setIsMaintenanceMode(e.target.checked)}
+                  className="mt-0.5 rounded border-neutral-300 dark:border-neutral-700 text-black dark:text-white focus:ring-0"
+                />
+                <div>
+                  <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
+                    System Maintenance Lock
+                  </div>
+                  <div className="text-[11px] text-neutral-500">
+                    Temporarily restrict public access with a maintenance banner.
+                  </div>
+                </div>
+              </label>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Database Health, Cache Purge & 1-Click Backup Export */}
-        <div className="space-y-6">
-          {/* Database Health & Cache Purge Card */}
-          <div className="rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-[var(--border-neutral)]/60 pb-3">
-              <div className="flex items-center gap-2">
-                <Database className="h-4 w-4 text-[var(--accent)]" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--content-primary)]">
-                  Supabase Database & Cache Control
-                </h3>
-              </div>
-              <span className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-mono font-bold flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
-                <span>Connected</span>
-              </span>
-            </div>
+        {/* Right Column: Cache, DB Backups & Telemetry (Span 6) */}
+        <div className="lg:col-span-6 space-y-6">
+          {/* Cache & Engine Performance */}
+          <div className="rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-6 shadow-xs space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 border-b border-neutral-100 dark:border-neutral-900 pb-3">
+              Cache & Realtime Invalidation
+            </h3>
 
-            <div className="space-y-3 text-xs">
-              <div className="rounded-[16px] border border-[var(--border-neutral)] bg-[var(--bg-screen)] p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-[var(--content-primary)]">In-Memory Query Cache</span>
-                  <span className="font-mono text-[11px] text-emerald-500 font-bold">Enabled (30s TTL)</span>
-                </div>
-                <p className="text-[11px] text-[var(--content-tertiary)] leading-relaxed">
-                  Fast sub-millisecond query responses with automated invalidation on data mutations.
-                </p>
-
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={handlePurgeCache}
-                    disabled={isPurgingCache}
-                    className="flex items-center gap-2 rounded-full border border-[var(--border-neutral)] bg-[var(--bg-neutral)] px-4 py-2 text-xs font-bold text-[var(--content-primary)] hover:bg-[var(--bg-neutral-hover)] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    <RefreshCw className={cn("h-3.5 w-3.5", isPurgingCache && "animate-spin text-[var(--accent)]")} />
-                    <span>{cachePurgedSuccess ? "Cache Purged & Reloaded!" : "Purge Cache & Reload Live"}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* RLS Status */}
-              <div className="flex items-center justify-between rounded-[14px] bg-[var(--bg-neutral)] p-3 border border-[var(--border-neutral)]">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                  <span className="font-semibold text-[var(--content-primary)]">PostgreSQL Row-Level Security</span>
-                </div>
-                <span className="font-mono text-[10px] text-emerald-500 font-bold">100% Enforced</span>
-              </div>
-            </div>
-          </div>
-
-          {/* 1-Click Platform Backup & Export Card */}
-          <div className="rounded-[24px] border border-[var(--border-neutral)] bg-[var(--bg-elevated)] p-6 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 border-b border-[var(--border-neutral)]/60 pb-3">
-              <Download className="h-4 w-4 text-[var(--accent)]" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--content-primary)]">
-                Master Database Backup & Export
-              </h3>
-            </div>
-
-            <p className="text-xs text-[var(--content-secondary)] leading-relaxed">
-              Super Admin exports include full JSON archives of all monographs, creator profiles, and CSV tables.
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              Flush in-memory Supabase cached datasets to force immediate refresh from postgres tables across all routes.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            <button
+              type="button"
+              onClick={handlePurgeCache}
+              disabled={isPurgingCache}
+              className="flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-4 py-2 text-xs font-bold text-neutral-900 dark:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            >
+              <RefreshCw className={cn("h-3.5 w-3.5", isPurgingCache && "animate-spin")} />
+              <span>{cachePurgedSuccess ? "Cache Purged Successfully!" : "Purge All In-Memory Caches"}</span>
+            </button>
+          </div>
+
+          {/* Database Backup Exports */}
+          <div className="rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-900 pb-3">
+              <div className="flex items-center gap-2">
+                <Database className="h-4 w-4 text-neutral-900 dark:text-neutral-100" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
+                  Database Backups & JSON Dumps
+                </h3>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <button
                 type="button"
                 onClick={() => handleExportJSON("projects")}
-                className="flex items-center justify-between rounded-[14px] border border-[var(--border-neutral)] bg-[var(--bg-neutral)] p-3 text-xs font-bold text-[var(--content-primary)] hover:border-[var(--content-primary)] transition-colors cursor-pointer text-left"
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer text-center"
               >
-                <div className="flex items-center gap-2">
-                  <FileCode className="h-4 w-4 text-[var(--accent)]" />
-                  <span>Projects JSON</span>
-                </div>
-                <span className="text-[10px] font-mono text-[var(--content-tertiary)]">{projects.length} Items</span>
+                <Download className="h-4 w-4 text-neutral-500 mb-1" />
+                <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100">Monographs</span>
+                <span className="text-[10px] font-mono text-neutral-400">({projects.length} records)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleExportJSON("creators")}
-                className="flex items-center justify-between rounded-[14px] border border-[var(--border-neutral)] bg-[var(--bg-neutral)] p-3 text-xs font-bold text-[var(--content-primary)] hover:border-[var(--content-primary)] transition-colors cursor-pointer text-left"
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer text-center"
               >
-                <div className="flex items-center gap-2">
-                  <FileCode className="h-4 w-4 text-emerald-500" />
-                  <span>Users JSON</span>
-                </div>
-                <span className="text-[10px] font-mono text-[var(--content-tertiary)]">{creators.length} Items</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleExportCSV}
-                className="flex items-center justify-between rounded-[14px] border border-[var(--border-neutral)] bg-[var(--bg-neutral)] p-3 text-xs font-bold text-[var(--content-primary)] hover:border-[var(--content-primary)] transition-colors cursor-pointer text-left"
-              >
-                <div className="flex items-center gap-2">
-                  <Download className="h-4 w-4 text-sky-500" />
-                  <span>Monographs CSV</span>
-                </div>
-                <span className="text-[10px] font-mono text-[var(--content-tertiary)]">Table</span>
+                <Download className="h-4 w-4 text-neutral-500 mb-1" />
+                <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100">Studios</span>
+                <span className="text-[10px] font-mono text-neutral-400">({creators.length} users)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleExportJSON("full")}
-                className="flex items-center justify-between rounded-[14px] border border-[var(--border-neutral)] bg-[var(--chip-bg)] text-[var(--chip-fg)] p-3 text-xs font-bold hover:opacity-95 transition-opacity cursor-pointer text-left shadow-xs"
+                className="flex flex-col items-center justify-center p-3 rounded-xl bg-black text-white dark:bg-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors cursor-pointer text-center shadow-xs"
               >
-                <div className="flex items-center gap-2">
-                  <HardDrive className="h-4 w-4 text-[var(--accent)]" />
-                  <span>Full Master Backup</span>
-                </div>
-                <span className="text-[10px] font-mono opacity-80">All Records</span>
+                <Download className="h-4 w-4 mb-1" />
+                <span className="text-xs font-bold">Full Database</span>
+                <span className="text-[10px] font-mono opacity-80">Full Schema</span>
               </button>
+            </div>
+          </div>
+
+          {/* Theme Mode Selector */}
+          <div className="rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-6 shadow-xs space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 border-b border-neutral-100 dark:border-neutral-900 pb-3">
+              Dashboard Color Mode
+            </h3>
+
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { id: "light", label: "Light Mode", icon: Sun },
+                { id: "dark", label: "Dark Mode", icon: Moon },
+                { id: "system", label: "System Auto", icon: Laptop },
+              ].map((opt) => {
+                const Icon = opt.icon;
+                const isSelected = theme === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setTheme(opt.id as any)}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-3 rounded-xl border transition-all cursor-pointer",
+                      isSelected
+                        ? "border-black dark:border-white bg-black text-white dark:bg-white dark:text-black shadow-xs"
+                        : "border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white"
+                    )}
+                  >
+                    <Icon className="h-4 w-4 mb-1" />
+                    <span className="text-xs font-bold">{opt.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -23,12 +23,6 @@ import {
   ExternalLink,
   LogOut,
   Shield,
-  ShieldCheck,
-  ShieldAlert,
-  Zap,
-  Activity,
-  SlidersHorizontal,
-  HardDrive,
   Radio,
   Lock,
   FileEdit,
@@ -57,7 +51,7 @@ export function DashboardSidebar({
 
   const navGroups = [
     {
-      label: "Super Admin Command",
+      label: "Master Command",
       items: [
         {
           label: "Master Overview",
@@ -66,16 +60,16 @@ export function DashboardSidebar({
           badge: undefined,
         },
         {
-          label: "Platform Monographs",
+          label: "Monographs",
           href: "/dashboard/projects",
           icon: FolderKanban,
           badge: projects.length.toString(),
         },
         {
-          label: "Users & Studios Directory",
+          label: "Users & Studios",
           href: "/dashboard/creators",
           icon: Users,
-          badge: `${creators.length} Total`,
+          badge: `${creators.length}`,
         },
       ],
     },
@@ -83,10 +77,10 @@ export function DashboardSidebar({
       label: "Content & Moderation",
       items: [
         {
-          label: "Site CMS & Content",
+          label: "Site CMS Studio",
           href: "/dashboard/cms",
           icon: FileEdit,
-          badge: "Live Editor",
+          badge: "Editor",
         },
         {
           label: "Critiques Moderation",
@@ -95,10 +89,10 @@ export function DashboardSidebar({
           badge: undefined,
         },
         {
-          label: "Master Taxonomy CRUD",
+          label: "Taxonomy & Disciplines",
           href: "/dashboard/taxonomy",
           icon: Tags,
-          badge: "13 Disciplines",
+          badge: "13",
         },
         {
           label: "Storage & CDN Vault",
@@ -115,7 +109,6 @@ export function DashboardSidebar({
           label: "AI Director Engine",
           href: "/dashboard/ai-lab",
           icon: Sparkles,
-          highlight: true,
         },
         {
           label: "Global Broadcasts",
@@ -157,7 +150,7 @@ export function DashboardSidebar({
       {/* Sidebar Container */}
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-40 flex flex-col border-r border-[var(--border-neutral)] bg-[var(--bg-screen)] transition-all duration-300 ease-in-out select-none",
+          "fixed top-0 bottom-0 left-0 z-40 flex flex-col border-r border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black transition-all duration-300 ease-in-out select-none",
           // Mobile state
           isMobileOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0",
           // Desktop collapsed state
@@ -165,24 +158,24 @@ export function DashboardSidebar({
         )}
       >
         {/* Top Header: Brand & Super Admin Shield */}
-        <div className="flex h-16 items-center justify-between px-4 border-b border-[var(--border-neutral)]">
+        <div className="flex h-16 items-center justify-between px-4 border-b border-neutral-200 dark:border-neutral-800">
           <Link
             href="/dashboard"
             className={cn(
-              "flex items-center gap-2.5 overflow-hidden transition-opacity hover:opacity-90",
+              "flex items-center gap-2.5 overflow-hidden transition-opacity hover:opacity-80",
               isCollapsed && "lg:justify-center lg:w-full"
             )}
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--primary-forest-green)] dark:bg-[var(--accent)] text-white dark:text-black font-bold text-lg shadow-xs">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black dark:bg-white text-white dark:text-black font-black text-lg shadow-xs">
               <Shield className="h-4.5 w-4.5 fill-current" />
             </div>
             {(!isCollapsed || isMobileOpen) && (
               <div className="flex flex-col">
-                <span className={cn(bricolage.className, "text-base font-bold tracking-tight text-[var(--content-primary)] leading-none")}>
-                  Layerat<span className="text-[var(--accent)] font-black">.</span>
+                <span className={cn(bricolage.className, "text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-50 leading-none")}>
+                  Layerat<span className="font-black">.</span>
                 </span>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <span className="rounded bg-[var(--bg-neutral)] border border-[var(--border-neutral)] px-1.5 py-0.2 text-[9px] font-mono uppercase tracking-wider font-bold text-[var(--content-secondary)]">
+                  <span className="rounded bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 px-1.5 py-0.2 text-[9px] font-mono uppercase tracking-wider font-bold text-neutral-600 dark:text-neutral-400">
                     SUPER ADMIN
                   </span>
                 </div>
@@ -194,7 +187,7 @@ export function DashboardSidebar({
           <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--border-neutral)] bg-[var(--bg-elevated)] text-[var(--content-secondary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer"
+            className="hidden lg:flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-500 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
@@ -203,14 +196,14 @@ export function DashboardSidebar({
 
         {/* Super Admin Status Indicator Pill */}
         {(!isCollapsed || isMobileOpen) && (
-          <div className="mx-3 mt-3 rounded-[14px] bg-[var(--bg-elevated)] border border-[var(--border-neutral)] px-3 py-2 flex items-center justify-between shadow-2xs">
+          <div className="mx-3 mt-3 rounded-[14px] bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 px-3 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[11px] font-mono font-bold text-[var(--content-primary)]">
-                Root Access Active
+              <span className="h-2 w-2 rounded-full bg-black dark:bg-white animate-pulse" />
+              <span className="text-[11px] font-mono font-bold text-neutral-900 dark:text-neutral-100">
+                Root Access Granted
               </span>
             </div>
-            <Lock className="h-3 w-3 text-[var(--content-tertiary)]" />
+            <Lock className="h-3 w-3 text-neutral-400" />
           </div>
         )}
 
@@ -220,7 +213,7 @@ export function DashboardSidebar({
             href="/me/projects/new"
             onClick={onMobileClose}
             className={cn(
-              "group flex items-center justify-center gap-2 rounded-[14px] bg-[var(--primary-forest-green)] dark:bg-[var(--accent)] text-white dark:text-[var(--primary-forest-green)] font-bold transition-all shadow-xs hover:opacity-95 active:scale-[0.98]",
+              "group flex items-center justify-center gap-2 rounded-[14px] bg-black dark:bg-white text-white dark:text-black font-bold transition-all shadow-xs hover:bg-neutral-800 dark:hover:bg-neutral-200 active:scale-[0.98]",
               isCollapsed ? "h-11 w-full p-0" : "h-10 px-3.5 text-xs w-full"
             )}
             title="Create New Monograph"
@@ -235,7 +228,7 @@ export function DashboardSidebar({
           {navGroups.map((group) => (
             <div key={group.label} className="space-y-1">
               {(!isCollapsed || isMobileOpen) && (
-                <div className="px-2 pb-1 text-[10px] font-mono uppercase tracking-wider text-[var(--content-tertiary)] font-bold">
+                <div className="px-2 pb-1 text-[10px] font-mono uppercase tracking-wider text-neutral-400 dark:text-neutral-500 font-bold">
                   {group.label}
                 </div>
               )}
@@ -254,8 +247,8 @@ export function DashboardSidebar({
                     className={cn(
                       "group relative flex items-center gap-3 rounded-[12px] px-3 py-2 text-xs font-semibold transition-all duration-150",
                       isActive
-                        ? "bg-[var(--chip-bg)] text-[var(--chip-fg)] shadow-xs"
-                        : "text-[var(--content-secondary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)]",
+                        ? "bg-black dark:bg-white text-white dark:text-black shadow-xs"
+                        : "text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900",
                       isCollapsed && "lg:justify-center lg:px-2"
                     )}
                     title={item.label}
@@ -264,10 +257,8 @@ export function DashboardSidebar({
                       className={cn(
                         "h-4 w-4 shrink-0 transition-colors",
                         isActive
-                          ? "text-[var(--accent)]"
-                          : item.highlight
-                          ? "text-[var(--accent)]"
-                          : "text-[var(--content-tertiary)] group-hover:text-[var(--content-primary)]"
+                          ? "text-white dark:text-black"
+                          : "text-neutral-400 group-hover:text-black dark:group-hover:text-white"
                       )}
                     />
                     {(!isCollapsed || isMobileOpen) && (
@@ -279,19 +270,12 @@ export function DashboardSidebar({
                         className={cn(
                           "rounded-full px-2 py-0.5 text-[10px] font-mono font-bold shrink-0",
                           isActive
-                            ? "bg-white/20 text-white dark:bg-black/20 dark:text-[var(--primary-forest-green)]"
-                            : "bg-[var(--bg-neutral)] text-[var(--content-secondary)] border border-[var(--border-neutral)]"
+                            ? "bg-neutral-800 text-white dark:bg-neutral-200 dark:text-black"
+                            : "bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800"
                         )}
                       >
                         {item.badge}
                       </span>
-                    )}
-
-                    {isActive && (
-                      <motion.div
-                        layoutId="active-indicator"
-                        className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-[var(--accent)]"
-                      />
                     )}
                   </Link>
                 );
@@ -301,19 +285,19 @@ export function DashboardSidebar({
         </div>
 
         {/* Footer: Super Admin Profile Card & Site Link */}
-        <div className="border-t border-[var(--border-neutral)] p-3 bg-[var(--bg-elevated)]/60 divide-y divide-[var(--border-neutral)]/60">
+        <div className="border-t border-neutral-200 dark:border-neutral-800 p-3 bg-neutral-50/50 dark:bg-neutral-950 divide-y divide-neutral-200 dark:divide-neutral-800">
           {/* Quick Exit to Public Site */}
           <div className="pb-2">
             <Link
               href="/"
               className={cn(
-                "flex items-center gap-2.5 rounded-[10px] px-2.5 py-1.5 text-xs font-semibold text-[var(--content-secondary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors",
+                "flex items-center gap-2.5 rounded-[10px] px-2.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors",
                 isCollapsed && "lg:justify-center lg:px-0"
               )}
               title="Return to Public Platform"
             >
-              <ExternalLink className="h-3.5 w-3.5 text-[var(--content-tertiary)]" />
-              {(!isCollapsed || isMobileOpen) && <span>Public Showcase View</span>}
+              <ExternalLink className="h-3.5 w-3.5 text-neutral-400" />
+              {(!isCollapsed || isMobileOpen) && <span>Public Platform View</span>}
             </Link>
           </div>
 
@@ -325,7 +309,7 @@ export function DashboardSidebar({
                 isCollapsed && "lg:justify-center"
               )}
             >
-              <div className="relative h-8 w-8 rounded-full overflow-hidden ring-1 ring-[var(--border-neutral)] shrink-0">
+              <div className="relative h-8 w-8 rounded-full overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-800 shrink-0">
                 <Image
                   src={getValidAvatarUrl(user?.avatarUrl)}
                   alt={user?.displayName || "Super Admin"}
@@ -338,12 +322,12 @@ export function DashboardSidebar({
               {(!isCollapsed || isMobileOpen) && (
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1">
-                    <span className="text-xs font-bold text-[var(--content-primary)] truncate">
+                    <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate">
                       {user?.displayName || "Super Admin"}
                     </span>
                     <VerifiedBadge size="sm" />
                   </div>
-                  <div className="text-[10px] font-mono text-[var(--content-tertiary)] truncate">
+                  <div className="text-[10px] font-mono text-neutral-400 truncate">
                     @root_superadmin
                   </div>
                 </div>
@@ -355,7 +339,7 @@ export function DashboardSidebar({
               <button
                 type="button"
                 onClick={handleLogout}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-[var(--content-tertiary)] hover:text-[var(--content-primary)] hover:bg-[var(--bg-neutral)] transition-colors cursor-pointer shrink-0"
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
                 title="Sign out of Super Admin"
               >
                 <LogOut className="h-4 w-4" />

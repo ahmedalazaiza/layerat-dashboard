@@ -148,38 +148,152 @@ export const SYSTEM_ROLES: RoleDefinition[] = [
   },
 ];
 
+export const DEFAULT_CUSTOM_ROLES: RoleDefinition[] = [
+  {
+    id: "role-critique-lead",
+    name: "Critique & Review Lead",
+    badge: "REVIEW",
+    description: "Evaluates studio monographs, verifies design documentation standards, and curates design feedback.",
+    isSystem: false,
+    permissions: ["projects.view", "creators.view", "comments.moderate"],
+  },
+  {
+    id: "role-brand-custodian",
+    name: "Brand & Taxonomy Custodian",
+    badge: "BRAND",
+    description: "Supervises creative disciplines, software tools list, platform guidelines, and media storage.",
+    isSystem: false,
+    permissions: ["taxonomy.manage", "media.manage", "cms.edit"],
+  },
+];
+
 export const INITIAL_ADMIN_MEMBERS: AdminMember[] = [
   {
-    id: "admin-1",
+    id: "2d6ea33a-fc53-4b4c-bf82-40db29b3b998",
     name: "Ahmed Al-Azaiza",
     email: "ahmedazy.uxui@gmail.com",
     username: "ahmed_al_azaiza",
-    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300",
+    avatarUrl: "https://ttjobsgglwgyioqlldqj.supabase.co/storage/v1/object/public/avatars/avatars/1788444338918-hid4ogb.webp",
     roleId: "super_admin",
     status: "active",
-    lastActive: "Just now",
-    createdAt: "2026-08-01",
+    lastActive: "Active now",
+    createdAt: "2026-09-03",
   },
   {
-    id: "admin-2",
-    name: "Ameera Hamada",
-    email: "ameera@layerat.com",
-    username: "ameera_hamada_1",
-    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300",
+    id: "91d16866-1a9c-4bd8-9ada-07bd0307cce9",
+    name: "Israa Zorob",
+    email: "israa_zorob@layerat.com",
+    username: "israa_zorob",
+    avatarUrl: "https://ttjobsgglwgyioqlldqj.supabase.co/storage/v1/object/public/avatars/avatars/1788445372684-sjarzzy.webp",
     roleId: "editorial_director",
     status: "active",
-    lastActive: "2 hours ago",
-    createdAt: "2026-08-10",
+    lastActive: "Active today",
+    createdAt: "2026-09-03",
   },
   {
-    id: "admin-3",
-    name: "Kareem Editorial",
-    email: "kareem@layerat.com",
-    username: "kareem_curator",
-    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300",
-    roleId: "community_moderator",
+    id: "f9fe1e80-b5b5-4b95-a98d-85ebdc5d1d26",
+    name: "sarah elgarousha",
+    email: "sarah_elgarousha@layerat.com",
+    username: "sarah_elgarousha",
+    avatarUrl: "/default-avatar.svg",
+    roleId: "curator",
     status: "active",
     lastActive: "Yesterday",
-    createdAt: "2026-08-15",
+    createdAt: "2026-09-02",
+  },
+  {
+    id: "f9057561-87e7-4302-b7df-87957a41e8c1",
+    name: "Saphie",
+    email: "saphie@layerat.com",
+    username: "saphie",
+    avatarUrl: "/default-avatar.svg",
+    roleId: "community_moderator",
+    status: "active",
+    lastActive: "Active today",
+    createdAt: "2026-09-02",
   },
 ];
+
+// =============================================================================
+// LAYERAT MASTER BLUEPRINT RBAC MATRIX
+// =============================================================================
+
+import { UserRole } from "./types";
+
+export type BlueprintModule =
+  | "analytics"
+  | "settings"
+  | "featured"
+  | "creators"
+  | "roles"
+  | "users"
+  | "collections"
+  | "moderation"
+  | "taxonomy"
+  | "legal";
+
+export const RBAC_MATRIX: Record<UserRole, Record<BlueprintModule, "Full" | "Read" | "None">> = {
+  admin: {
+    analytics: "Full",
+    settings: "Full",
+    featured: "Full",
+    creators: "Full",
+    roles: "Full",
+    users: "Full",
+    collections: "Full",
+    moderation: "Full",
+    taxonomy: "Full",
+    legal: "Full",
+  },
+  curator: {
+    analytics: "Read",
+    settings: "None",
+    featured: "Full",
+    creators: "Read",
+    roles: "None",
+    users: "Read",
+    collections: "Full",
+    moderation: "Read",
+    taxonomy: "Read",
+    legal: "None",
+  },
+  moderator: {
+    analytics: "Read",
+    settings: "None",
+    featured: "Read",
+    creators: "Read",
+    roles: "None",
+    users: "Read",
+    collections: "None",
+    moderation: "Full",
+    taxonomy: "None",
+    legal: "None",
+  },
+  member: {
+    analytics: "None",
+    settings: "None",
+    featured: "None",
+    creators: "None",
+    roles: "None",
+    users: "None",
+    collections: "None",
+    moderation: "None",
+    taxonomy: "None",
+    legal: "None",
+  },
+};
+
+export function canAccessModule(role: UserRole = "admin", module: BlueprintModule): boolean {
+  const access = RBAC_MATRIX[role]?.[module] ?? "None";
+  return access !== "None";
+}
+
+export function canMutateModule(role: UserRole = "admin", module: BlueprintModule): boolean {
+  const access = RBAC_MATRIX[role]?.[module] ?? "None";
+  return access === "Full";
+}
+
+export function getModuleAccess(role: UserRole = "admin", module: BlueprintModule): "Full" | "Read" | "None" {
+  return RBAC_MATRIX[role]?.[module] ?? "None";
+}
+

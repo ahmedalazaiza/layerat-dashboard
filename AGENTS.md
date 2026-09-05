@@ -34,5 +34,10 @@ Every single user request MUST pass through the following strict multi-stage pip
    - Audit for dead code, unneeded dependencies, anti-patterns, typing issues, and messy naming.
    - Ensure DRY principles, clean architecture, and modularity.
 
-**CRITICAL DIRECTIVE**: If ANY gate (DevOps, UX, Code Review) flags an issue, you MUST immediately rebuild and fix it internally before reporting back. Only deliver 100% perfected, fully verified work to the user.
+6. **Database Action Gate (Mandatory Closing Section)**:
+   - At the end of EVERY request, evaluate if any schema change, migration, policy, or SQL query is needed.
+   - If YES: provide the exact copy-pasteable SQL query for the Supabase SQL editor.
+   - If NO: explicitly state: `Database Status: No manual database queries required for this update.`
+
+**CRITICAL DIRECTIVE**: If ANY gate (DevOps, UX, Code Review, Database) flags an issue, you MUST immediately rebuild and fix it internally before reporting back. Only deliver 100% perfected, fully verified work to the user.
 

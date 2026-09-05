@@ -1,5 +1,7 @@
 export * from "./taxonomy";
 
+export type UserRole = "admin" | "curator" | "moderator" | "member";
+
 export interface Creator {
   id: string;
   username: string;
@@ -11,10 +13,16 @@ export interface Creator {
   city: string;
   website?: string;
   skills: string[];
-  isCurrentUser?: boolean;
-  followersCount?: number;
+  role?: UserRole;
+  customBadge?: string;
   isVerified?: boolean;
   isOnline?: boolean;
+  isSuspended?: boolean;
+  followersCount?: number;
+  totalProjectsCount?: number;
+  isCurrentUser?: boolean;
+  createdAt?: string;
+  lastSignInAt?: string;
 }
 
 export interface Comment {
@@ -59,6 +67,8 @@ export type ProjectMedium =
   | "3D"
   | string;
 
+export type ProjectBadge = "Staff Pick" | "Project of the Day" | "Best of Month" | null;
+
 export interface Project {
   id: string;
   slug: string;
@@ -74,10 +84,14 @@ export interface Project {
   subCategory?: string;
   medium: ProjectMedium;
   published: boolean;
+  isPublished?: boolean; // Blueprint alias
   publishedAt: string;
   appreciations: number;
-  comments: Comment[];
+  viewCount?: number;
   featured?: boolean;
+  featuredOrder?: number | null;
+  badge?: ProjectBadge;
+  comments: Comment[];
 }
 
 export type NotificationType = "appreciation" | "comment" | "follow" | "publish";
@@ -94,4 +108,98 @@ export interface Notification {
   content?: string;
   createdAt: string;
   read: boolean;
+}
+
+// =============================================================================
+// LAYERAT ADMIN & CURATION DASHBOARD SPECIFICATION TYPES
+// =============================================================================
+
+export interface PlatformSettings {
+  id: "global";
+  announcementBannerActive: boolean;
+  announcementBannerText: string;
+  announcementBannerLink: string;
+  allowSignups: boolean;
+  maintenanceMode: boolean;
+  maintenanceMessage: string;
+  enableCollections: boolean;
+  maxUploadSizeMb: number;
+  updatedAt: string;
+}
+
+export interface Collection {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  coverImage: string;
+  projectIds: string[];
+  isFeatured: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ReportReason =
+  | "copyright"
+  | "inappropriate_content"
+  | "spam"
+  | "harassment"
+  | "other";
+
+export type ReportStatus = "pending" | "reviewed" | "resolved" | "dismissed";
+
+export interface Report {
+  id: string;
+  projectId: string;
+  project?: Project;
+  reporterId?: string;
+  reporter?: Creator;
+  reason: ReportReason;
+  description: string;
+  status: ReportStatus;
+  resolutionNotes?: string;
+  createdAt: string;
+  resolvedAt?: string;
+}
+
+export interface CategoryItem {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  icon: string;
+  subCategories: string[];
+  softwareTools: string[];
+  recommendedTags: string[];
+  sortOrder: number;
+}
+
+export interface LegalDocumentSection {
+  id: string;
+  title: string;
+  content: string;
+  points?: string[];
+}
+
+export type LegalDocType = "terms" | "privacy" | "guidelines";
+
+export interface LegalDocument {
+  id: LegalDocType;
+  title: string;
+  subtitle: string;
+  version: string;
+  summary: string;
+  sections: LegalDocumentSection[];
+  updatedAt: string;
+}
+
+export interface VitalityMetrics {
+  totalCreators: number;
+  activeCreators30D: number;
+  publishedMonographs: number;
+  totalAppreciations: number;
+  totalViews: number;
+  pendingReportsCount: number;
+  storageConsumedMb: number;
 }

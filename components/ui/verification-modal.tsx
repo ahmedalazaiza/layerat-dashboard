@@ -19,12 +19,13 @@ import {
   Compass,
   Zap,
   Lock,
+  Flag,
 } from "lucide-react";
 import { getResendStatus, sendVerificationEmail } from "@/lib/resend-limiter";
 import { bricolage } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 
-export type GatedActionType = "like" | "follow" | "comment" | "publish";
+export type GatedActionType = "like" | "follow" | "comment" | "publish" | "report";
 
 interface VerificationModalProps {
   isOpen: boolean;
@@ -162,6 +163,25 @@ export function VerificationModal({
             "Unlimited high-resolution gallery uploads",
             "Editorial placement in kinetic discover streams",
             "Custom studio profile with verified badge",
+          ],
+        };
+      case "report":
+        return {
+          glowColor: "rgba(0, 0, 0, 0.15)",
+          badgeBg: "bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-800",
+          badgeIcon: <Flag className="h-3.5 w-3.5" />,
+          badgeLabel: "Safety & Copyright Review",
+          iconBg: "from-neutral-500/20 to-neutral-600/5 text-neutral-900 dark:text-white ring-neutral-500/20",
+          icon: <Flag className="h-7 w-7 stroke-[2.2]" />,
+          title: "Sign in to Report Monograph",
+          description: targetName
+            ? `Sign in to your account to file a safety flag or copyright review on "${targetName}".`
+            : "Sign in to your account to file a safety flag or copyright review.",
+          targetLabel: "Target Monograph",
+          benefits: [
+            "Official 24-hour review by Layerat trust & safety administrators",
+            "Verification of original authorship and commercial font licensing",
+            "Confidential audit logging with complete creator privacy",
           ],
         };
     }
@@ -345,19 +365,19 @@ export function VerificationModal({
                 <Link
                   href="/login"
                   onClick={onClose}
-                  className="group relative flex items-center justify-center gap-2 w-full py-3.5 px-5 rounded-2xl font-bold text-sm bg-[var(--primary-forest-green)] text-[var(--bg-screen)] dark:bg-[#8DFF00] dark:text-[#090C09] shadow-[0_4px_14px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
+                  className="group relative flex items-center justify-center gap-2 w-full py-3.5 px-5 rounded-2xl font-bold text-sm bg-neutral-900 text-white dark:bg-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all cursor-pointer shadow-xs"
                 >
-                  <span>Log in to your account</span>
+                  <span>Sign in to your account</span>
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </Link>
 
-                <Link
-                  href="/signup"
+                <button
+                  type="button"
                   onClick={onClose}
-                  className="flex items-center justify-center w-full py-3 px-5 rounded-2xl font-semibold text-sm bg-[var(--bg-neutral)]/80 hover:bg-[var(--bg-neutral)] border border-[var(--border-neutral)] text-[var(--content-primary)] hover:scale-[1.005] active:scale-[0.99] transition-all cursor-pointer"
+                  className="w-full py-2.5 text-xs font-medium text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
-                  Create a free account
-                </Link>
+                  Cancel
+                </button>
               </div>
             )}
           </div>

@@ -47,9 +47,9 @@ export function CMSEditor({ projects }: CMSEditorProps) {
   const [heroSecondaryCtaText, setHeroSecondaryCtaText] = useState("Join Collective");
   const [heroSecondaryCtaLink, setHeroSecondaryCtaLink] = useState("/signup");
   const [featuredProjectId, setFeaturedProjectId] = useState<string>(projects[0]?.id || "");
-  const [statsCreatorsCount, setStatsCreatorsCount] = useState("10K+");
-  const [statsMonographsCount, setStatsMonographsCount] = useState("50K+");
-  const [statsCountriesCount, setStatsCountriesCount] = useState("120+");
+  const [statsCreatorsCount, setStatsCreatorsCount] = useState("");
+  const [statsMonographsCount, setStatsMonographsCount] = useState(projects.length.toString());
+  const [statsCountriesCount, setStatsCountriesCount] = useState("");
 
   // 2. About Us Content State
   const [aboutHeadline, setAboutHeadline] = useState("The modern home for great design.");

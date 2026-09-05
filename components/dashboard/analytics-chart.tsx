@@ -25,27 +25,38 @@ export function AnalyticsChart({ projects }: AnalyticsChartProps) {
   const [activeMetric, setActiveMetric] = useState<"appreciations" | "views" | "comments">("appreciations");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  // Generate date points and metrics
+  // Generate date points and metrics strictly from real projects data
   const chartData = useMemo(() => {
     const pointsCount = timeRange === "7d" ? 7 : timeRange === "30d" ? 14 : 24;
+    const dayStep = timeRange === "7d" ? 1 : timeRange === "30d" ? 2 : 4;
     const now = new Date();
     const data = [];
 
-    const totalLikes = projects.reduce((acc, p) => acc + (p.appreciations || 0), 0);
-    const totalComments = projects.reduce((acc, p) => acc + (p.comments?.length || 0), 0);
-    const baselineLikes = Math.max(12, totalLikes);
-    const baselineComments = Math.max(4, totalComments);
-
     for (let i = pointsCount - 1; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(now.getDate() - i * (timeRange === "7d" ? 1 : timeRange === "30d" ? 2 : 4));
-      
-      const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-      
-      const noise = Math.sin(i * 0.8) * 0.3 + Math.cos(i * 1.2) * 0.2 + 1;
-      const appreciations = Math.round((baselineLikes / pointsCount) * noise * (1 + (pointsCount - i) * 0.08));
-      const views = Math.round(appreciations * 14.5 + (noise * 80));
-      const comments = Math.max(1, Math.round((baselineComments / pointsCount) * noise * 1.2));
+      const bucketDate = new Date();
+      bucketDate.setDate(now.getDate() - i * dayStep);
+      bucketDate.setHours(23, 59, 59, 999);
+      const bucketStart = new Date(bucketDate);
+      bucketStart.setDate(bucketStart.getDate() - dayStep);
+      bucketStart.setHours(0, 0, 0, 0);
+
+      const label = bucketDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+      let appreciations = 0;
+      let views = 0;
+      let comments = 0;
+
+      projects.forEach((p) => {
+        const dateStr = p.publishedAt || (p as { createdAt?: string }).createdAt;
+        const pDate = dateStr ? new Date(dateStr) : null;
+        if (pDate && !isNaN(pDate.getTime())) {
+          if (pDate.getTime() >= bucketStart.getTime() && pDate.getTime() <= bucketDate.getTime()) {
+            appreciations += p.appreciations || 0;
+            views += p.viewCount || 0;
+            comments += p.comments?.length || 0;
+          }
+        }
+      });
 
       data.push({ label, appreciations, views, comments });
     }

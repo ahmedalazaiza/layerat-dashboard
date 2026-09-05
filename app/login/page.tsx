@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { LoginClient } from "./login-client";
 
 export const metadata: Metadata = {
-  title: "Log in",
-  description: "Sign in to manage your portfolio and projects on Layerat.",
+  title: "Admin Console Login · Layerat",
+  description: "Secure administrative access for Layerat platform governance and operations.",
   robots: {
     index: false,
     follow: false,
@@ -11,5 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  return <LoginClient />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-neutral-50 dark:bg-black" />}>
+      <LoginClient />
+    </Suspense>
+  );
 }

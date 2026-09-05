@@ -22,22 +22,25 @@ export function StatsCard({
   change,
   trend = "neutral",
   icon: Icon,
-  sparklineData = [10, 25, 18, 30, 45, 38, 55],
+  sparklineData,
 }: StatsCardProps) {
-  // Compute basic SVG sparkline path
-  const min = Math.min(...sparklineData);
-  const max = Math.max(...sparklineData);
+  // Compute basic SVG sparkline path only if real data exists
+  const hasSparkline = Boolean(sparklineData && sparklineData.length > 1);
+  const min = hasSparkline && sparklineData ? Math.min(...sparklineData) : 0;
+  const max = hasSparkline && sparklineData ? Math.max(...sparklineData) : 1;
   const range = max - min || 1;
   const width = 80;
   const height = 28;
 
-  const points = sparklineData
-    .map((val, idx) => {
-      const x = (idx / (sparklineData.length - 1)) * width;
-      const y = height - ((val - min) / range) * (height - 6) - 3;
-      return `${x},${y}`;
-    })
-    .join(" ");
+  const points = hasSparkline && sparklineData
+    ? sparklineData
+        .map((val, idx) => {
+          const x = (idx / (sparklineData.length - 1)) * width;
+          const y = height - ((val - min) / range) * (height - 6) - 3;
+          return `${x},${y}`;
+        })
+        .join(" ")
+    : "";
 
   return (
     <div className="relative overflow-hidden rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-5 sm:p-6 transition-all duration-200 hover:border-neutral-400 dark:hover:border-neutral-600 shadow-xs">
@@ -85,8 +88,8 @@ export function StatsCard({
           )}
         </div>
 
-        {/* Minimalist SVG Sparkline */}
-        {sparklineData.length > 1 && (
+        {/* Minimalist SVG Sparkline (Only if real series data provided) */}
+        {hasSparkline && (
           <div className="shrink-0 opacity-60 hover:opacity-100 transition-opacity">
             <svg width={width} height={height} className="overflow-visible">
               <polyline

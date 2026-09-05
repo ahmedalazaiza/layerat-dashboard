@@ -1,6 +1,68 @@
+import { deleteStorageFiles } from "./storage";
 import { supabase } from "./client";
-import { Project, Creator, Comment, Notification, NotificationType } from "@/lib/types";
+import {
+  Project,
+  Creator,
+  Comment,
+  Notification,
+  NotificationType,
+  PlatformSettings,
+  Collection,
+  Report,
+  ReportStatus,
+  CategoryItem,
+  LegalDocument,
+  LegalDocType,
+  UserRole,
+  ProjectBadge,
+  VitalityMetrics,
+} from "@/lib/types";
+import { MASTER_TAXONOMY } from "@/lib/taxonomy";
 import { DEFAULT_AVATAR_URL } from "@/lib/avatar";
+import { AdminMember } from "@/lib/roles";
+
+export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
+  id: "global",
+  announcementBannerText: "",
+  announcementBannerLink: "",
+  announcementBannerActive: false,
+  allowSignups: true,
+  maintenanceMode: false,
+  maintenanceMessage: "Layerat is currently undergoing scheduled platform upgrades. We will be back online shortly.",
+  maxUploadSizeMb: 25,
+  enableCollections: false,
+  updatedAt: new Date().toISOString(),
+};
+
+export const DEFAULT_LEGAL_DOCUMENTS: Record<LegalDocType, LegalDocument> = {
+  terms: {
+    id: "terms",
+    title: "Terms of Service",
+    subtitle: "Editorial & Curation Agreement",
+    version: "2026.1",
+    summary: "Layerat terms of service governing creative publication and curation.",
+    sections: [],
+    updatedAt: new Date().toISOString(),
+  },
+  privacy: {
+    id: "privacy",
+    title: "Privacy Policy",
+    subtitle: "Privacy & Data Pledge",
+    version: "2026.1",
+    summary: "Layerat zero data-selling pledge and privacy policy.",
+    sections: [],
+    updatedAt: new Date().toISOString(),
+  },
+  guidelines: {
+    id: "guidelines",
+    title: "Community Guidelines",
+    subtitle: "Peer & Craft Standards",
+    version: "2026.1",
+    summary: "Sanctuary for thoughtful creative craft and peer critique.",
+    sections: [],
+    updatedAt: new Date().toISOString(),
+  },
+};
 
 // =============================================================================
 // TYPE MAPPERS
@@ -42,6 +104,9 @@ export function mapProfileToCreator(row: any, currentUserId?: string): Creator {
     skills: row.skills || [],
     isVerified: Boolean(row.is_verified),
     isOnline: row.is_online ?? false,
+    isSuspended: Boolean(row.is_suspended),
+    role: (row.role as UserRole) || ((row.id === "b2c69284-b4bf-40db-8b70-994dec053d04" || row.id === "2d6ea33a-fc53-4b4c-bf82-40db29b3b998") ? "admin" : "member"),
+    customBadge: row.badge || row.custom_badge || ((row.id === "b2c69284-b4bf-40db-8b70-994dec053d04" || row.id === "2d6ea33a-fc53-4b4c-bf82-40db29b3b998") ? "SuperAdmin" : undefined),
     followersCount: liveFollowers,
     isCurrentUser: currentUserId ? row.id === currentUserId : false,
   };
@@ -88,6 +153,9 @@ export function mapProjectRow(row: any, currentUserId?: string): Project {
     appreciations: liveAppreciations,
     comments,
     featured: row.featured ?? false,
+    viewCount: row.views_count ?? 0,
+    featuredOrder: row.featured_order ?? null,
+    badge: row.badge ?? null,
   };
 }
 
@@ -579,6 +647,41 @@ export async function updateProjectInDb(id: string, updates: Partial<Project>): 
  */
 export async function deleteProjectFromDb(id: string): Promise<boolean> {
   try {
+    // 1. Fetch all media associated with the project to purge from Cloudflare R2 and Supabase
+    const { data: projectRow } = await supabase
+      .from("projects")
+      .select("cover_image, gallery_images, body, summary")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (projectRow) {
+      const mediaUrls = new Set<string>();
+      if (projectRow.cover_image) mediaUrls.add(projectRow.cover_image);
+      if (Array.isArray(projectRow.gallery_images)) {
+        projectRow.gallery_images.forEach((u: string) => {
+          if (u) mediaUrls.add(u);
+        });
+      }
+
+      // Extract any embedded media URLs within body or summary
+      const textContent = `${projectRow.body || ""} ${projectRow.summary || ""}`;
+      const matchedUrls = textContent.match(/https?:\/\/[^\s"'<>]+\.(?:webp|png|jpg|jpeg|gif|svg|avif)(?:\?[^\s"'<>]*)?/gi);
+      if (matchedUrls) {
+        matchedUrls.forEach((u) => mediaUrls.add(u));
+      }
+
+      if (mediaUrls.size > 0) {
+        await deleteStorageFiles(Array.from(mediaUrls), "project-media");
+      }
+    }
+
+    // 2. Explicitly hard delete associated comments and appreciations
+    await Promise.allSettled([
+      supabase.from("comments").delete().eq("project_id", id),
+      supabase.from("appreciations").delete().eq("project_id", id),
+    ]);
+
+    // 3. Delete the project database record
     const { error } = await supabase
       .from("projects")
       .delete()
@@ -974,4 +1077,860 @@ export async function markAllNotificationsReadInDb(recipientId: string): Promise
   }
 }
 
+// =============================================================================
+// LAYERAT MASTER BLUEPRINT QUERIES & MUTATIONS
+// =============================================================================
 
+/**
+ * Fetch platform operational settings (singleton row id = 'global')
+ */
+export async function fetchPlatformSettingsFromDb(): Promise<PlatformSettings> {
+  try {
+    const { data, error } = await supabase
+      .from("platform_settings")
+      .select("*")
+      .eq("id", "global")
+      .single();
+
+    if (error || !data) {
+      return DEFAULT_PLATFORM_SETTINGS;
+    }
+
+    return {
+      id: "global",
+      announcementBannerActive: data.announcement_banner_active ?? false,
+      announcementBannerText: data.announcement_banner_text ?? "",
+      announcementBannerLink: data.announcement_banner_link ?? "",
+      allowSignups: data.allow_signups ?? true,
+      maintenanceMode: data.maintenance_mode ?? false,
+      maintenanceMessage: data.maintenance_message ?? "Layerat is currently undergoing scheduled platform upgrades. We will be back online shortly.",
+      enableCollections: data.enable_collections ?? false,
+      maxUploadSizeMb: data.max_upload_size_mb ?? 25,
+      updatedAt: data.updated_at || new Date().toISOString(),
+    };
+  } catch (err) {
+    console.warn("fetchPlatformSettingsFromDb error, falling back to default:", err);
+    return DEFAULT_PLATFORM_SETTINGS;
+  }
+}
+
+/**
+ * Update platform operational settings
+ */
+export async function updatePlatformSettingsInDb(updates: Partial<PlatformSettings>): Promise<PlatformSettings> {
+  const payload: Record<string, unknown> = {
+    id: "global",
+    updated_at: new Date().toISOString(),
+  };
+
+  if (updates.announcementBannerActive !== undefined) payload.announcement_banner_active = updates.announcementBannerActive;
+  if (updates.announcementBannerText !== undefined) payload.announcement_banner_text = updates.announcementBannerText;
+  if (updates.announcementBannerLink !== undefined) payload.announcement_banner_link = updates.announcementBannerLink;
+  if (updates.allowSignups !== undefined) payload.allow_signups = updates.allowSignups;
+  if (updates.maintenanceMode !== undefined) payload.maintenance_mode = updates.maintenanceMode;
+  if (updates.maintenanceMessage !== undefined) payload.maintenance_message = updates.maintenanceMessage;
+  if (updates.enableCollections !== undefined) payload.enable_collections = updates.enableCollections;
+  if (updates.maxUploadSizeMb !== undefined) payload.max_upload_size_mb = updates.maxUploadSizeMb;
+
+  try {
+    const { data, error } = await supabase
+      .from("platform_settings")
+      .upsert(payload)
+      .select()
+      .single();
+
+    if (error || !data) {
+      console.warn("Could not persist platform_settings to Supabase, returning update:", error?.message);
+      return { ...DEFAULT_PLATFORM_SETTINGS, ...updates, updatedAt: new Date().toISOString() };
+    }
+
+    return {
+      id: "global",
+      announcementBannerActive: data.announcement_banner_active,
+      announcementBannerText: data.announcement_banner_text,
+      announcementBannerLink: data.announcement_banner_link,
+      allowSignups: data.allow_signups,
+      maintenanceMode: data.maintenance_mode,
+      maintenanceMessage: data.maintenance_message,
+      enableCollections: data.enable_collections,
+      maxUploadSizeMb: data.max_upload_size_mb,
+      updatedAt: data.updated_at,
+    };
+  } catch {
+    return { ...DEFAULT_PLATFORM_SETTINGS, ...updates, updatedAt: new Date().toISOString() };
+  }
+}
+
+/**
+ * Fetch featured homepage projects ordered by featured_order
+ */
+export async function fetchFeaturedProjectsFromDb(): Promise<Project[]> {
+  const allProjects = await fetchProjects();
+  return allProjects
+    .filter((p) => p.featured || (p.featuredOrder !== null && p.featuredOrder !== undefined))
+    .sort((a, b) => ((a.featuredOrder ?? 99) - (b.featuredOrder ?? 99)));
+}
+
+/**
+ * Update project featured order in DB
+ */
+export async function updateProjectFeaturedOrderInDb(projectId: string, order: number | null): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("projects")
+      .update({
+        featured: order !== null,
+        featured_order: order,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", projectId);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Update editorial badge on project (Staff Pick, Project of the Day, Best of Month, None)
+ */
+export async function updateProjectBadgeInDb(projectId: string, badge: ProjectBadge): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("projects")
+      .update({
+        badge: badge,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", projectId);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Toggle project publish status
+ */
+export async function toggleProjectPublishInDb(projectId: string, isPublished: boolean): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("projects")
+      .update({
+        published: isPublished,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", projectId);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fetch all users with admin/governance details
+ */
+export async function fetchAdminUsersFromDb(): Promise<Creator[]> {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select(`
+        *,
+        projects:projects!creator_id(count)
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data.map((row) => {
+      const projectCount = Array.isArray(row.projects) && row.projects.length > 0 && typeof row.projects[0].count === "number"
+        ? row.projects[0].count
+        : (row.total_projects_count ?? 0);
+
+      return {
+        id: row.id,
+        username: row.username || "creator",
+        displayName: row.display_name || row.username || "Creator",
+        email: row.email || `${row.username || "creator"}@layerat.com`,
+        avatarUrl: row.avatar_url || DEFAULT_AVATAR_URL,
+        bio: row.bio || "",
+        location: row.location || "",
+        city: row.city || row.location || "",
+        website: row.website || undefined,
+        skills: row.skills || [],
+        role: (row.role as UserRole) || ((row.id === "b2c69284-b4bf-40db-8b70-994dec053d04" || row.id === "2d6ea33a-fc53-4b4c-bf82-40db29b3b998") ? "admin" : "member"),
+        customBadge: row.badge || row.custom_badge || ((row.id === "b2c69284-b4bf-40db-8b70-994dec053d04" || row.id === "2d6ea33a-fc53-4b4c-bf82-40db29b3b998") ? "SuperAdmin" : undefined),
+        isVerified: Boolean(row.is_verified),
+        isOnline: Boolean(row.is_online),
+        isSuspended: Boolean(row.is_suspended),
+        followersCount: row.followers_count ?? 0,
+        totalProjectsCount: projectCount,
+        createdAt: row.created_at ? new Date(row.created_at).toISOString().split("T")[0] : "2026-01-01",
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Update user role (admin | curator | moderator | member)
+ */
+export async function updateUserRoleInDb(userId: string, role: UserRole): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ role, updated_at: new Date().toISOString() })
+      .eq("id", userId);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Toggle user verification status
+ */
+export async function toggleUserVerificationInDb(userId: string, isVerified: boolean): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_verified: isVerified, updated_at: new Date().toISOString() })
+      .eq("id", userId);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Update custom badge (e.g. "Founding Creator", "Design Judge")
+ */
+export async function updateUserCustomBadgeInDb(userId: string, customBadge: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ badge: customBadge || null, updated_at: new Date().toISOString() })
+      .eq("id", userId);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Suspend or unsuspend user account
+ */
+export async function toggleUserSuspensionInDb(userId: string, isSuspended: boolean): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_suspended: isSuspended, updated_at: new Date().toISOString() })
+      .eq("id", userId);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fetch Curated Collections
+ */
+export async function fetchCollectionsFromDb(): Promise<Collection[]> {
+  try {
+    const { data, error } = await supabase
+      .from("collections")
+      .select("*")
+      .order("sort_order", { ascending: true });
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data.map((row) => ({
+      id: row.id,
+      title: row.title,
+      slug: row.slug,
+      description: row.description || "",
+      coverImage: row.cover_image || "",
+      projectIds: Array.isArray(row.project_ids) ? row.project_ids : [],
+      isFeatured: Boolean(row.is_featured),
+      sortOrder: row.sort_order ?? 1,
+      createdAt: row.created_at || new Date().toISOString(),
+      updatedAt: row.updated_at || new Date().toISOString(),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Create or update a collection
+ */
+export async function upsertCollectionInDb(col: Partial<Collection> & { title: string }): Promise<Collection> {
+  const slug = col.slug || col.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const payload = {
+    id: col.id || crypto.randomUUID(),
+    title: col.title,
+    slug,
+    description: col.description || "",
+    cover_image: col.coverImage || "",
+    project_ids: col.projectIds || [],
+    is_featured: col.isFeatured ?? false,
+    sort_order: col.sortOrder ?? 1,
+    updated_at: new Date().toISOString(),
+  };
+
+  try {
+    const { data, error } = await supabase
+      .from("collections")
+      .upsert(payload)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return {
+        id: payload.id,
+        title: payload.title,
+        slug: payload.slug,
+        description: payload.description,
+        coverImage: payload.cover_image,
+        projectIds: payload.project_ids,
+        isFeatured: payload.is_featured,
+        sortOrder: payload.sort_order,
+        createdAt: new Date().toISOString(),
+        updatedAt: payload.updated_at,
+      };
+    }
+
+    return {
+      id: data.id,
+      title: data.title,
+      slug: data.slug,
+      description: data.description,
+      coverImage: data.cover_image,
+      projectIds: data.project_ids,
+      isFeatured: data.is_featured,
+      sortOrder: data.sort_order,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  } catch {
+    return {
+      id: payload.id,
+      title: payload.title,
+      slug: payload.slug,
+      description: payload.description,
+      coverImage: payload.cover_image,
+      projectIds: payload.project_ids,
+      isFeatured: payload.is_featured,
+      sortOrder: payload.sort_order,
+      createdAt: new Date().toISOString(),
+      updatedAt: payload.updated_at,
+    };
+  }
+}
+
+/**
+ * Delete a collection
+ */
+export async function deleteCollectionFromDb(id: string): Promise<boolean> {
+  try {
+    const { error } = await supabase.from("collections").delete().eq("id", id);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fetch moderation reports
+ */
+export async function fetchReportsFromDb(): Promise<Report[]> {
+  try {
+    const { data, error } = await supabase
+      .from("reports")
+      .select(`
+        id,
+        reporter_id,
+        project_id,
+        reported_creator_id,
+        reason,
+        notes,
+        status,
+        created_at,
+        updated_at,
+        project:projects(
+          *,
+          creator:profiles(*)
+        ),
+        reporter:profiles!reports_reporter_id_fkey(*),
+        reported_creator:profiles!reports_reported_creator_id_fkey(*)
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data.map((row) => ({
+      id: row.id,
+      projectId: row.project_id,
+      project: row.project ? mapProjectRow(row.project) : undefined,
+      reporterId: row.reporter_id || undefined,
+      reporter: row.reporter ? mapProfileToCreator(row.reporter) : undefined,
+      reason: row.reason || "other",
+      description: row.notes || "",
+      status: (row.status as ReportStatus) || "pending",
+      resolutionNotes: row.notes || "",
+      createdAt: row.created_at || new Date().toISOString(),
+      resolvedAt: row.status === "resolved" || row.status === "dismissed" ? row.updated_at : undefined,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Create a new real moderation report
+ */
+export async function createReportInDb(payload: {
+  projectId: string;
+  reporterId?: string;
+  reportedCreatorId?: string;
+  reason: string;
+  notes: string;
+}): Promise<Report | null> {
+  try {
+    const { data, error } = await supabase
+      .from("reports")
+      .insert({
+        project_id: payload.projectId,
+        reporter_id: payload.reporterId || null,
+        reported_creator_id: payload.reportedCreatorId || null,
+        reason: payload.reason,
+        notes: payload.notes,
+        status: "pending",
+        updated_at: new Date().toISOString(),
+      })
+      .select(`
+        id,
+        reporter_id,
+        project_id,
+        reported_creator_id,
+        reason,
+        notes,
+        status,
+        created_at,
+        updated_at,
+        project:projects(
+          *,
+          creator:profiles(*)
+        ),
+        reporter:profiles!reports_reporter_id_fkey(*),
+        reported_creator:profiles!reports_reported_creator_id_fkey(*)
+      `)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return {
+      id: data.id,
+      projectId: data.project_id,
+      project: data.project ? mapProjectRow(data.project) : undefined,
+      reporterId: data.reporter_id || undefined,
+      reporter: data.reporter ? mapProfileToCreator(data.reporter) : undefined,
+      reason: data.reason || "other",
+      description: data.notes || "",
+      status: (data.status as ReportStatus) || "pending",
+      resolutionNotes: data.notes || "",
+      createdAt: data.created_at || new Date().toISOString(),
+      resolvedAt: undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Update report status
+ */
+export async function updateReportStatusInDb(
+  reportId: string,
+  status: ReportStatus,
+  resolutionNotes?: string
+): Promise<boolean> {
+  try {
+    const updatePayload: Record<string, unknown> = {
+      status,
+      updated_at: new Date().toISOString(),
+    };
+    if (resolutionNotes !== undefined) {
+      updatePayload.notes = resolutionNotes;
+    }
+
+    const { error } = await supabase
+      .from("reports")
+      .update(updatePayload)
+      .eq("id", reportId);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Enforce 1-click moderation action: Hide Project, Suspend Creator, or Dismiss Flag
+ */
+export async function enforceModerationActionInDb(
+  action: "hide_project" | "suspend_creator" | "dismiss",
+  reportId: string,
+  projectId?: string,
+  creatorId?: string,
+  notes?: string
+): Promise<boolean> {
+  try {
+    if (action === "hide_project" && projectId) {
+      await toggleProjectPublishInDb(projectId, false);
+      return await updateReportStatusInDb(reportId, "resolved", notes || "Monograph hidden from public view.");
+    }
+    if (action === "suspend_creator" && creatorId) {
+      await toggleUserSuspensionInDb(creatorId, true);
+      return await updateReportStatusInDb(reportId, "resolved", notes || "Creator account suspended.");
+    }
+    if (action === "dismiss") {
+      return await updateReportStatusInDb(reportId, "dismissed", notes || "Report dismissed after investigation.");
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Delete a report record permanently
+ */
+export async function deleteReportFromDb(reportId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("reports")
+      .delete()
+      .eq("id", reportId);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fetch categories / 13 Master Disciplines
+ */
+export async function fetchCategoriesFromDb(): Promise<CategoryItem[]> {
+  try {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .order("sort_order", { ascending: true });
+
+    if (!error && data && data.length > 0) {
+      return data.map((row) => ({
+        id: row.id,
+        name: row.name,
+        slug: row.slug,
+        description: row.description || "",
+        icon: row.icon || "Layers",
+        subCategories: Array.isArray(row.sub_categories) ? row.sub_categories : [],
+        softwareTools: Array.isArray(row.software_tools) ? row.software_tools : [],
+        recommendedTags: Array.isArray(row.recommended_tags) ? row.recommended_tags : [],
+        sortOrder: row.sort_order ?? 1,
+      }));
+    }
+
+    return MASTER_TAXONOMY.map((t, idx) => ({
+      id: t.id,
+      name: t.name,
+      slug: t.shortName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      description: t.description,
+      icon: "Layers",
+      subCategories: t.subCategories,
+      softwareTools: t.tools,
+      recommendedTags: t.tags,
+      sortOrder: idx + 1,
+    }));
+  } catch {
+    return MASTER_TAXONOMY.map((t, idx) => ({
+      id: t.id,
+      name: t.name,
+      slug: t.shortName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      description: t.description,
+      icon: "Layers",
+      subCategories: t.subCategories,
+      softwareTools: t.tools,
+      recommendedTags: t.tags,
+      sortOrder: idx + 1,
+    }));
+  }
+}
+
+/**
+ * Update category taxonomy
+ */
+export async function updateCategoryInDb(id: string, updates: Partial<CategoryItem>): Promise<boolean> {
+  const payload: Record<string, unknown> = {};
+  if (updates.name !== undefined) payload.name = updates.name;
+  if (updates.slug !== undefined) payload.slug = updates.slug;
+  if (updates.description !== undefined) payload.description = updates.description;
+  if (updates.icon !== undefined) payload.icon = updates.icon;
+  if (updates.subCategories !== undefined) payload.sub_categories = updates.subCategories;
+  if (updates.softwareTools !== undefined) payload.software_tools = updates.softwareTools;
+  if (updates.recommendedTags !== undefined) payload.recommended_tags = updates.recommendedTags;
+  if (updates.sortOrder !== undefined) payload.sort_order = updates.sortOrder;
+
+  try {
+    const { error } = await supabase
+      .from("categories")
+      .update(payload)
+      .eq("id", id);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fetch dynamic legal policy documents
+ */
+export async function fetchLegalDocumentsFromDb(): Promise<Record<LegalDocType, LegalDocument>> {
+  try {
+    const { data, error } = await supabase
+      .from("legal_documents")
+      .select("*");
+
+    const docs: Record<LegalDocType, LegalDocument> = { ...DEFAULT_LEGAL_DOCUMENTS };
+    if (!error && data && data.length > 0) {
+      for (const row of data) {
+        if (row.id in docs) {
+          const id = row.id as LegalDocType;
+          docs[id] = {
+            id,
+            title: row.title || docs[id].title,
+            subtitle: row.subtitle || docs[id].subtitle,
+            version: row.version || docs[id].version,
+            summary: row.summary || docs[id].summary,
+            sections: Array.isArray(row.sections) ? row.sections : docs[id].sections,
+            updatedAt: row.updated_at || new Date().toISOString(),
+          };
+        }
+      }
+    }
+    return docs;
+  } catch {
+    return DEFAULT_LEGAL_DOCUMENTS;
+  }
+}
+
+/**
+ * Update dynamic legal document
+ */
+export async function updateLegalDocumentInDb(
+  id: LegalDocType,
+  updates: Partial<LegalDocument>
+): Promise<LegalDocument> {
+  const existing = DEFAULT_LEGAL_DOCUMENTS[id];
+  const payload = {
+    id,
+    title: updates.title ?? existing.title,
+    subtitle: updates.subtitle ?? existing.subtitle,
+    version: updates.version ?? existing.version,
+    summary: updates.summary ?? existing.summary,
+    sections: updates.sections ?? existing.sections,
+    updated_at: new Date().toISOString(),
+  };
+
+  try {
+    const { data, error } = await supabase
+      .from("legal_documents")
+      .upsert(payload)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return { ...existing, ...updates, updatedAt: new Date().toISOString() };
+    }
+
+    return {
+      id,
+      title: data.title,
+      subtitle: data.subtitle,
+      version: data.version,
+      summary: data.summary,
+      sections: data.sections,
+      updatedAt: data.updated_at,
+    };
+  } catch {
+    return { ...existing, ...updates, updatedAt: new Date().toISOString() };
+  }
+}
+
+/**
+ * Compute Blueprint Vitality Metrics Strictly from Real Database Rows
+ */
+export async function fetchVitalityMetricsFromDb(): Promise<VitalityMetrics> {
+  const [creators, allProjects, reports] = await Promise.all([
+    fetchAdminUsersFromDb(),
+    fetchProjects({ publishedOnly: false }),
+    fetchReportsFromDb(),
+  ]);
+
+  const totalCreators = creators.length;
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const activeCreators30D = creators.filter((c) => {
+    if (!c.createdAt) return false;
+    const createdTime = new Date(c.createdAt).getTime();
+    return !isNaN(createdTime) && createdTime >= thirtyDaysAgo;
+  }).length;
+
+  const publishedMonographs = allProjects.filter((p) => p.published !== false).length;
+  const totalAppreciations = allProjects.reduce((acc, p) => acc + (p.appreciations || 0), 0);
+  const totalViews = allProjects.reduce((acc, p) => acc + (p.viewCount || 0), 0);
+  const pendingReportsCount = reports.filter((r) => r.status === "pending").length;
+  const totalPlates = allProjects.reduce((acc, p) => acc + (p.galleryImages?.length || 1), 0);
+  const storageConsumedMb = Math.round(totalPlates * 3.5);
+
+  return {
+    totalCreators,
+    activeCreators30D,
+    publishedMonographs,
+    totalAppreciations,
+    totalViews,
+    pendingReportsCount,
+    storageConsumedMb,
+  };
+}
+
+
+
+
+
+// =============================================================================
+// ADMIN USERS (RBAC) DB QUERIES
+// =============================================================================
+
+export async function fetchAdminMembersFromDb(): Promise<AdminMember[]> {
+  try {
+    const { data, error } = await supabase
+      .from("admin_users")
+      .select(`
+        id,
+        user_id,
+        email,
+        role,
+        permissions,
+        status,
+        created_at,
+        profiles:user_id (
+          display_name,
+          username,
+          avatar_url
+        )
+      `)
+      .order("created_at", { ascending: true });
+
+    if (error || !data) return [];
+
+    return data.map((row: any) => {
+      const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+      return {
+        id: row.user_id,
+        name: profile?.display_name || row.email.split("@")[0],
+        email: row.email,
+        username: profile?.username || row.email.split("@")[0],
+        avatarUrl: profile?.avatar_url || DEFAULT_AVATAR_URL,
+        roleId: row.role,
+        status: row.status as "active" | "invited" | "suspended",
+        lastActive: "Active now",
+        createdAt: row.created_at ? new Date(row.created_at).toISOString().split("T")[0] : "2026-09-01",
+        customPermissions: Array.isArray(row.permissions) ? row.permissions : undefined,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function updateAdminUserRoleInDb(
+  userId: string,
+  role: string,
+  permissions?: string[]
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("admin_users")
+      .update({
+        role,
+        permissions: permissions || [],
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId);
+
+    if (!error) {
+      await supabase
+        .from("profiles")
+        .update({ role: role === "super_admin" || role === "editorial_director" ? "admin" : "curator" })
+        .eq("id", userId);
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+export async function deleteAdminUserInDb(userId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("admin_users")
+      .delete()
+      .eq("user_id", userId);
+
+    if (!error) {
+      await supabase
+        .from("profiles")
+        .update({ role: "member" })
+        .eq("id", userId);
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+export async function toggleAdminUserStatusInDb(
+  userId: string,
+  status: "active" | "suspended"
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("admin_users")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("user_id", userId);
+
+    return !error;
+  } catch {
+    return false;
+  }
+}

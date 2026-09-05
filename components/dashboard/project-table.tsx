@@ -33,14 +33,14 @@ interface ProjectTableProps {
 }
 
 export function ProjectTable({ projects }: ProjectTableProps) {
-  const { saveProject, deleteProject } = useSession();
+  const { saveProject, deleteProject, openReportModal, reports, confirmAction } = useSession();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [lightboxImages, setLightboxImages] = useState<{ url: string; alt: string }[]>([]);
-  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
+  const [lightboxProject, setLightboxProject] = useState<Project | null>(null);
 
   // Bulk Selection Toggles
   const handleSelectAll = () => {
@@ -87,17 +87,6 @@ export function ProjectTable({ projects }: ProjectTableProps) {
     }
   };
 
-  // Super Admin: Toggle Flag for Review
-  const handleToggleFlag = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setFlaggedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   // Bulk Actions
   const handleBulkFeature = async () => {
     for (const id of Array.from(selectedIds)) {
@@ -120,18 +109,27 @@ export function ProjectTable({ projects }: ProjectTableProps) {
   };
 
   const handleBulkDelete = async () => {
-    if (confirm(`Are you sure you want to delete ${selectedIds.size} monographs? This cannot be undone.`)) {
-      for (const id of Array.from(selectedIds)) {
-        await deleteProject(id);
-      }
-      setSelectedIds(new Set());
+    const ok = await confirmAction({
+      title: `Delete ${selectedIds.size} Monographs?`,
+      description: `This action will permanently delete ${selectedIds.size} selected monographs from the database. This cannot be undone.`,
+      confirmText: `Delete ${selectedIds.size} Monographs`,
+      cancelText: "Keep Monographs",
+      variant: "destructive",
+      badgeLabel: "Permanent Bulk Deletion",
+    });
+    if (!ok) return;
+
+    for (const id of Array.from(selectedIds)) {
+      await deleteProject(id);
     }
+    setSelectedIds(new Set());
   };
 
   // Open Lightbox
-  const openLightbox = (images: { url: string; alt: string }[], index: number) => {
+  const openLightbox = (images: { url: string; alt: string }[], index: number, project?: Project) => {
     setLightboxImages(images);
     setLightboxIndex(index);
+    setLightboxProject(project || null);
   };
 
   return (
@@ -222,7 +220,9 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                 ) : (
                   projects.map((project) => {
                     const isSelected = selectedIds.has(project.id);
-                    const isFlagged = flaggedIds.has(project.id);
+                    const hasActiveReport = reports.some(
+                      (r) => r.projectId === project.id && r.status === "pending"
+                    );
                     const gallery = (project.galleryImages || [project.coverImage]).filter(Boolean).map((img, i) => ({
                       url: img,
                       alt: `${project.title} - ${i + 1}`,
@@ -234,7 +234,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                         className={cn(
                           "group transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900/40",
                           isSelected && "bg-neutral-100 dark:bg-neutral-900",
-                          isFlagged && "bg-neutral-50 dark:bg-neutral-900/60"
+                          hasActiveReport && "bg-neutral-50 dark:bg-neutral-900/60"
                         )}
                       >
                         {/* Checkbox */}
@@ -251,7 +251,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-3.5 min-w-[220px]">
                             <div
-                              onClick={() => openLightbox(gallery, 0)}
+                              onClick={() => openLightbox(gallery, 0, project)}
                               className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 cursor-pointer group/thumb"
                               title="Click to view full image in lightbox"
                             >
@@ -270,9 +270,9 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                             <div className="min-w-0">
                               <div className="font-bold text-neutral-900 dark:text-neutral-100 truncate max-w-[200px] sm:max-w-xs flex items-center gap-1.5">
                                 <span>{project.title}</span>
-                                {isFlagged && (
+                                {hasActiveReport && (
                                   <span className="rounded bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 px-1.5 py-0.2 text-[8px] font-mono font-bold uppercase">
-                                    Flagged
+                                    Reported
                                   </span>
                                 )}
                               </div>
@@ -374,17 +374,21 @@ export function ProjectTable({ projects }: ProjectTableProps) {
                         {/* Super Admin Actions */}
                         <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
-                            {/* Flag for Review */}
+                            {/* Report Project / Safety Flag */}
                             <button
                               type="button"
-                              onClick={(e) => handleToggleFlag(project.id, e)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openReportModal(project);
+                              }}
                               className={cn(
                                 "flex h-7 w-7 items-center justify-center rounded-lg border transition-colors cursor-pointer",
-                                isFlagged
+                                hasActiveReport
                                   ? "bg-black text-white dark:bg-white dark:text-black border-transparent"
                                   : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900"
                               )}
-                              title={isFlagged ? "Super Admin: Unflag Project" : "Super Admin: Flag for Moderation Review"}
+                              title="Report Project (Safety & Copyright Review)"
+                              aria-label={`Report ${project.title}`}
                             >
                               <Flag className="h-3.5 w-3.5" />
                             </button>
@@ -445,8 +449,12 @@ export function ProjectTable({ projects }: ProjectTableProps) {
           images={lightboxImages}
           currentIndex={lightboxIndex}
           isOpen={lightboxIndex !== null}
-          onClose={() => setLightboxIndex(null)}
+          onClose={() => {
+            setLightboxIndex(null);
+            setLightboxProject(null);
+          }}
           onNavigate={(newIdx) => setLightboxIndex(newIdx)}
+          project={lightboxProject}
         />
       )}
     </>

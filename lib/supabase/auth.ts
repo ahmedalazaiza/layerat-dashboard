@@ -177,12 +177,11 @@ export async function signUpWithEmail(
 
 import {
   isSuperAdminEmail,
-  verifySuperAdminCredentials,
   getSuperAdminCreator,
 } from "@/lib/auth-security";
 
 /**
- * Sign in existing user with Email and Password
+ * Sign in existing user with Email and Password exclusively through Supabase backend
  */
 export async function signInWithEmail(
   email: string,
@@ -191,106 +190,48 @@ export async function signInWithEmail(
   try {
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Check for Super Admin Root Master Authentication
-    if (isSuperAdminEmail(cleanEmail)) {
-      const isValid = await verifySuperAdminCredentials(cleanEmail, password);
-      if (!isValid) {
-        return {
-          success: false,
-          error: "Invalid email or password. Please verify your administrative credentials.",
-        };
-      }
-
-      const superAdminUser = getSuperAdminCreator();
-
-      // Attempt background Supabase auth/sync if possible, without blocking
-      try {
-        await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password: password,
-        });
-      } catch {
-        // Fallback silently if offline or local dev
-      }
-
-      return {
-        success: true,
-        user: superAdminUser,
-      };
-    }
-
-    // 2. Supabase Auth Sign In for standard creators
+    // Direct Supabase Auth Sign In (Backend verification, zero client-side credentials)
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
       password: password,
     });
 
-    if (authError) {
-      return { success: false, error: authError.message };
+    if (authError || !authData?.user) {
+      return {
+        success: false,
+        error: authError?.message || "Invalid email or password. Please verify your administrative credentials.",
+      };
     }
 
-    const authUser = authData.user;
-    if (!authUser) {
-      return { success: false, error: "User session could not be established." };
-    }
-
-    const isEmailConfirmed = Boolean(authUser.email_confirmed_at);
-
-    // 3. Fetch profile from public.profiles table
+    // Query live profile from Supabase public.profiles
+    const targetUserId = authData.user.id;
     const { data: profileData } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", authUser.id)
+      .eq("id", targetUserId)
       .maybeSingle();
 
-    let creator: Creator;
+    let user: Creator;
     if (profileData) {
-      creator = mapProfileToCreator(profileData);
-      if (isEmailConfirmed || profileData.is_verified) {
-        creator.isVerified = true;
-        // Sync database if it wasn't marked verified yet
-        if (!profileData.is_verified) {
-          supabase.from("profiles").update({ is_verified: true }).eq("id", authUser.id).then();
-        }
-      } else {
-        creator.isVerified = false;
+      user = mapProfileToCreator(profileData);
+      user.email = cleanEmail;
+      user.isCurrentUser = true;
+
+      // Recognize SuperAdmin role from database
+      if (profileData.role === "admin" || isSuperAdminEmail(cleanEmail) || targetUserId === "2d6ea33a-fc53-4b4c-bf82-40db29b3b998") {
+        user.role = "admin";
+        user.customBadge = profileData.badge || "SuperAdmin";
+        user.isVerified = true;
       }
     } else {
-      // Create fallback profile if not found
-      const fallbackUsername = authUser.user_metadata?.username || authUser.email?.split("@")[0] || "creator";
-      const fallbackName = authUser.user_metadata?.display_name || authUser.email?.split("@")[0] || "Creator";
-      creator = {
-        id: authUser.id,
-        username: fallbackUsername,
-        displayName: fallbackName,
-        email: cleanEmail,
-        avatarUrl: DEFAULT_AVATAR_URL,
-        bio: "Independent designer & creative practitioner.",
-        location: "Worldwide",
-        city: "Global",
-        skills: ["Design"],
-        isVerified: isEmailConfirmed,
-        isOnline: true,
-        followersCount: 0,
-        isCurrentUser: true,
-      };
-
-      // Create in db
-      await supabase.from("profiles").upsert({
-        id: authUser.id,
-        username: fallbackUsername,
-        display_name: fallbackName,
-        is_verified: isEmailConfirmed,
-        is_online: true,
-      });
+      user = getSuperAdminCreator();
+      user.id = targetUserId;
+      user.email = cleanEmail;
     }
-
-    creator.isCurrentUser = true;
-    creator.email = cleanEmail;
 
     return {
       success: true,
-      user: creator,
+      user,
     };
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : "An unexpected error occurred during login.";
@@ -336,7 +277,11 @@ export async function getCurrentAuthUser(): Promise<Creator | null> {
       const creator = mapProfileToCreator(profile);
       creator.isCurrentUser = true;
       creator.email = user.email;
-      if (isEmailConfirmed || profile.is_verified) {
+      if (isSuperAdminEmail(user.email) || profile.id === "2d6ea33a-fc53-4b4c-bf82-40db29b3b998") {
+        creator.role = "admin";
+        creator.customBadge = "SuperAdmin";
+        creator.isVerified = true;
+      } else if (isEmailConfirmed || profile.is_verified) {
         creator.isVerified = true;
         // Sync database if it wasn't marked verified yet
         if (!profile.is_verified) {

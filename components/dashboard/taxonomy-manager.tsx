@@ -27,11 +27,17 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useSession } from "@/lib/session-context";
+import { canMutateModule } from "@/lib/roles";
+
 interface TaxonomyManagerProps {
   projects: Project[];
 }
 
 export function TaxonomyManager({ projects }: TaxonomyManagerProps) {
+  const { activeRole, confirmAction } = useSession();
+  const canEdit = canMutateModule(activeRole, "taxonomy");
+
   const [taxonomyList, setTaxonomyList] = useState<CategoryTaxonomyItem[]>(MASTER_TAXONOMY);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(MASTER_TAXONOMY[0].id);
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,7 +46,6 @@ export function TaxonomyManager({ projects }: TaxonomyManagerProps) {
   // Modals & Edit States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   // Form states for creating/editing a discipline
   const [formName, setFormName] = useState("");
@@ -172,21 +177,38 @@ export function TaxonomyManager({ projects }: TaxonomyManagerProps) {
     setIsEditModalOpen(false);
   };
 
-  const handleDeleteDiscipline = () => {
+  const handleDeleteDiscipline = async () => {
     if (!activeCategory) return;
+    const ok = await confirmAction({
+      title: `Delete Discipline "${activeCategory.name}"?`,
+      description: `Are you sure you want to permanently delete "${activeCategory.name}" and its sub-categories? This action cannot be reversed.`,
+      confirmText: "Delete Discipline",
+      variant: "destructive",
+      targetName: activeCategory.name,
+      badgeLabel: "Permanent Taxonomy Deletion",
+    });
+    if (!ok) return;
+
     const updated = taxonomyList.filter((item) => item.id !== activeCategory.id);
     if (updated.length > 0) {
       setSelectedCategoryId(updated[0].id);
     }
     saveToStorage(updated);
-    setIsDeleteConfirmOpen(false);
   };
 
-  const handleResetToDefault = () => {
-    if (confirm("Are you sure you want to reset all taxonomy to platform defaults (13 Master Disciplines)?")) {
-      saveToStorage(MASTER_TAXONOMY);
-      setSelectedCategoryId(MASTER_TAXONOMY[0].id);
-    }
+  const handleResetToDefault = async () => {
+    const ok = await confirmAction({
+      title: "Reset Master Taxonomy?",
+      description: "Are you sure you want to reset all taxonomy to platform defaults (13 Master Disciplines)? All custom categories, tags, and tools will be overwritten.",
+      confirmText: "Reset to Defaults",
+      cancelText: "Keep Current Taxonomy",
+      variant: "warning",
+      badgeLabel: "Platform Reset",
+    });
+    if (!ok) return;
+
+    saveToStorage(MASTER_TAXONOMY);
+    setSelectedCategoryId(MASTER_TAXONOMY[0].id);
   };
 
   const handleAddSubCategory = (e: React.FormEvent) => {
@@ -303,6 +325,15 @@ export function TaxonomyManager({ projects }: TaxonomyManagerProps) {
 
   return (
     <div className="space-y-6">
+      {!canEdit && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 flex items-center gap-3 text-xs text-amber-800 dark:text-amber-200">
+          <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
+          <div>
+            <span className="font-bold">Read-Only Mode:</span> Modifying taxonomy requires <strong className="font-mono uppercase font-bold">Curator</strong> or <strong className="font-mono uppercase font-bold">Admin</strong> privileges. Your active persona is <span className="uppercase font-mono font-bold underline">{activeRole}</span>.
+          </div>
+        </div>
+      )}
+
       {/* Super Admin Action Header Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-[24px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-4 sm:p-5 shadow-xs">
         <div className="flex items-center gap-3">
@@ -472,7 +503,7 @@ export function TaxonomyManager({ projects }: TaxonomyManagerProps) {
 
                   <button
                     type="button"
-                    onClick={() => setIsDeleteConfirmOpen(true)}
+                    onClick={handleDeleteDiscipline}
                     className="flex items-center gap-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 px-3 py-1.5 text-xs font-bold text-neutral-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -773,42 +804,6 @@ export function TaxonomyManager({ projects }: TaxonomyManagerProps) {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Confirm Delete */}
-      {isDeleteConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-sm rounded-[28px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-6 text-center space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100">
-              <AlertTriangle className="h-6 w-6" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
-                Delete Discipline?
-              </h3>
-              <p className="text-xs text-neutral-500 mt-1">
-                Are you sure you want to delete <span className="font-bold text-neutral-900 dark:text-neutral-100">{activeCategory.name}</span>? This action cannot be reversed.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-center gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsDeleteConfirmOpen(false)}
-                className="rounded-full px-4 py-2 text-xs font-bold text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteDiscipline}
-                className="rounded-full bg-black text-white dark:bg-white dark:text-black px-5 py-2 text-xs font-bold hover:opacity-80 transition-opacity cursor-pointer"
-              >
-                Delete Discipline
-              </button>
-            </div>
           </div>
         </div>
       )}

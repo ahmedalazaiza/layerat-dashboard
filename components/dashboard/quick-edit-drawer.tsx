@@ -19,6 +19,7 @@ import {
   FileText,
   Trash2,
   Loader2,
+  Flag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +30,7 @@ interface QuickEditDrawerProps {
 }
 
 export function QuickEditDrawer({ project, isOpen, onClose }: QuickEditDrawerProps) {
-  const { saveProject, deleteProject } = useSession();
+  const { saveProject, deleteProject, openReportModal, confirmAction } = useSession();
 
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
@@ -121,6 +122,32 @@ export function QuickEditDrawer({ project, isOpen, onClose }: QuickEditDrawerPro
     }
   };
 
+  const hasUnsavedChanges =
+    project !== null &&
+    (title !== (project.title || "") ||
+      summary !== (project.summary || "") ||
+      category !== normalizeCategory(project.category) ||
+      medium !== (project.medium || "Image") ||
+      tags.join(",") !== (project.tags || []).join(",") ||
+      tools.join(",") !== (project.tools || []).join(",") ||
+      published !== (project.published !== false) ||
+      featured !== !!project.featured);
+
+  const handleSafeClose = async () => {
+    if (hasUnsavedChanges && !savedSuccess) {
+      const ok = await confirmAction({
+        title: "Discard Unsaved Changes?",
+        description: `You have unsaved edits on "${project.title}". Leaving now will discard all changes.`,
+        confirmText: "Discard Changes",
+        cancelText: "Keep Editing",
+        variant: "warning",
+        targetName: project.title,
+      });
+      if (!ok) return;
+    }
+    onClose();
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -130,7 +157,7 @@ export function QuickEditDrawer({ project, isOpen, onClose }: QuickEditDrawerPro
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={handleSafeClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
           />
 
@@ -160,7 +187,7 @@ export function QuickEditDrawer({ project, isOpen, onClose }: QuickEditDrawerPro
 
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={handleSafeClose}
                   className="rounded-lg p-1.5 text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors cursor-pointer"
                 >
                   <X className="h-4 w-4" />
@@ -416,13 +443,27 @@ export function QuickEditDrawer({ project, isOpen, onClose }: QuickEditDrawerPro
 
               {/* Footer CTA */}
               <div className="p-4 border-t border-neutral-100 dark:border-neutral-900 bg-neutral-50/50 dark:bg-neutral-950 flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="rounded-full px-4 py-2 text-xs font-bold text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSafeClose}
+                    className="rounded-full px-4 py-2 text-xs font-bold text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      openReportModal(project);
+                    }}
+                    className="flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold text-neutral-500 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors cursor-pointer"
+                    title="Report Project (Safety & Copyright Review)"
+                  >
+                    <Flag className="h-3.5 w-3.5" />
+                    <span>Report</span>
+                  </button>
+                </div>
 
                 <button
                   type="button"

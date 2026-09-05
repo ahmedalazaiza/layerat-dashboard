@@ -34,6 +34,7 @@ interface FlattenedComment extends Comment {
 }
 
 export function CommentModerationList({ projects }: CommentModerationListProps) {
+  const { confirmAction } = useSession();
   const [searchQuery, setSearchQuery] = useState("");
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
@@ -75,10 +76,19 @@ export function CommentModerationList({ projects }: CommentModerationListProps) 
     });
   }, [allComments, deletedIds, searchQuery]);
 
-  const handleDeleteComment = (id: string) => {
-    if (confirm("Are you sure you want to delete this critique comment?")) {
-      setDeletedIds((prev) => new Set(prev).add(id));
-    }
+  const handleDeleteComment = async (id: string) => {
+    const comment = allComments.find((c) => c.id === id);
+    const ok = await confirmAction({
+      title: "Delete Critique Comment?",
+      description: "Are you sure you want to permanently delete this critique comment? It will be removed from the discussion thread.",
+      confirmText: "Delete Comment",
+      variant: "destructive",
+      targetName: comment?.author ? `By @${comment.author.username || comment.author.displayName}` : "Critique Comment",
+      targetDetails: comment?.content,
+    });
+    if (!ok) return;
+
+    setDeletedIds((prev) => new Set(prev).add(id));
   };
 
   const handleTogglePin = (id: string) => {

@@ -535,3 +535,215 @@ export function getCreatorByUsername(username: string): Creator | undefined {
     (u) => u.username.toLowerCase() === username.toLowerCase()
   );
 }
+
+// =============================================================================
+// LAYERAT MASTER BLUEPRINT DATA SEEDS
+// =============================================================================
+
+import {
+  PlatformSettings,
+  Collection,
+  Report,
+  CategoryItem,
+  LegalDocument,
+  LegalDocType,
+} from "./types";
+import { MASTER_TAXONOMY } from "./taxonomy";
+
+export const mockPlatformSettings: PlatformSettings = {
+  id: "global",
+  announcementBannerActive: true,
+  announcementBannerText: "Layerat v2.4 Live: New Curated Collections Studio & Monograph Feeds",
+  announcementBannerLink: "https://layerat.com/explore",
+  allowSignups: true,
+  maintenanceMode: false,
+  maintenanceMessage: "Layerat is undergoing brief scheduled maintenance. We will be back online shortly.",
+  enableCollections: true,
+  maxUploadSizeMb: 25,
+  updatedAt: "2026-09-02T14:00:00Z",
+};
+
+export const mockCollections: Collection[] = [
+  {
+    id: "col-1",
+    title: "Brutalist Monochrome Archives",
+    slug: "brutalist-monochrome-archives",
+    description: "Curated monographs embracing stark high-contrast typography, exposed grid structures, and tactile uncoated paper specimens.",
+    coverImage: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=1200&auto=format&fit=crop&q=80",
+    projectIds: ["proj-1", "proj-7", "proj-4"],
+    isFeatured: true,
+    sortOrder: 1,
+    createdAt: "2026-08-10T10:00:00Z",
+    updatedAt: "2026-09-01T15:30:00Z",
+  },
+  {
+    id: "col-2",
+    title: "Spatial & Generative UI Horizons",
+    slug: "spatial-generative-ui-horizons",
+    description: "Cutting-edge spatial operating environments, node-based shaders, and responsive UI canvases by creative engineers.",
+    coverImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
+    projectIds: ["proj-2", "proj-5", "proj-3"],
+    isFeatured: true,
+    sortOrder: 2,
+    createdAt: "2026-08-15T12:00:00Z",
+    updatedAt: "2026-09-02T09:15:00Z",
+  },
+  {
+    id: "col-3",
+    title: "Kinetic Brand Architecture 2026",
+    slug: "kinetic-brand-architecture-2026",
+    description: "Multi-sensory brand systems bridging physical retail environments, generative glyphs, and dynamic motion systems.",
+    coverImage: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80",
+    projectIds: ["proj-3", "proj-6"],
+    isFeatured: false,
+    sortOrder: 3,
+    createdAt: "2026-08-22T08:30:00Z",
+    updatedAt: "2026-08-28T16:40:00Z",
+  },
+];
+
+export const mockReports: Report[] = [
+  {
+    id: "rep-1",
+    projectId: "proj-2",
+    reporterId: "user-3",
+    reason: "copyright",
+    description: "Third-party asset in slide 3 resembles uncredited 3D scan from Studio Lumina.",
+    status: "pending",
+    resolutionNotes: "",
+    createdAt: "2026-09-03T11:20:00Z",
+  },
+  {
+    id: "rep-2",
+    projectId: "proj-7",
+    reporterId: "user-4",
+    reason: "spam",
+    description: "Repeated duplicate links in the footer body linking to external affiliate courses.",
+    status: "reviewed",
+    resolutionNotes: "Under investigation by moderation lead.",
+    createdAt: "2026-09-02T16:45:00Z",
+  },
+  {
+    id: "rep-3",
+    projectId: "proj-5",
+    reporterId: "user-2",
+    reason: "inappropriate_content",
+    description: "Graphic content in cover image violates community showcase guidelines.",
+    status: "resolved",
+    resolutionNotes: "Author uploaded updated cover asset. Flag cleared.",
+    createdAt: "2026-08-30T10:15:00Z",
+    resolvedAt: "2026-08-31T09:00:00Z",
+  },
+  {
+    id: "rep-4",
+    projectId: "proj-3",
+    reporterId: "user-5",
+    reason: "harassment",
+    description: "Disparaging commentary in monograph body targeting another studio.",
+    status: "dismissed",
+    resolutionNotes: "Reviewed monograph text; critique was objective and compliant with guidelines.",
+    createdAt: "2026-08-28T14:30:00Z",
+    resolvedAt: "2026-08-29T12:00:00Z",
+  },
+];
+
+export const mockCategories: CategoryItem[] = MASTER_TAXONOMY.map((item, index) => ({
+  id: item.id,
+  name: item.name,
+  slug: item.id,
+  description: item.description,
+  icon: item.id === "ui" ? "Layout" : item.id === "brand" ? "Bookmark" : "Layers",
+  subCategories: [...item.subCategories],
+  softwareTools: [...item.tools],
+  recommendedTags: [...item.tags],
+  sortOrder: index + 1,
+}));
+
+export const mockLegalDocuments: Record<LegalDocType, LegalDocument> = {
+  terms: {
+    id: "terms",
+    title: "Terms of Use Agreement",
+    subtitle: "Governing rights, portfolio publication, and intellectual property on Layerat",
+    version: "2026.2",
+    summary: "By publishing on Layerat, creators retain 100% intellectual property rights while granting Layerat a non-exclusive license to display portfolio monographs.",
+    sections: [
+      {
+        id: "sec-1",
+        title: "1. Intellectual Property & Ownership",
+        content: "You retain all copyright, trademarks, and intellectual property rights in any work, monograph, image, 3D model, or code repository you publish on Layerat. We do not claim ownership of creator content.",
+        points: [
+          "Creators retain full uncompromised ownership of all uploaded assets.",
+          "Layerat receives only a worldwide, non-exclusive license to index and showcase work.",
+          "Work may be unpublished or permanently deleted by the creator at any time.",
+        ],
+      },
+      {
+        id: "sec-2",
+        title: "2. Creator Conduct & Monograph Integrity",
+        content: "Layerat is an editorial platform dedicated to authentic craft. Submissions must accurately represent original work, licensed collaborations, or properly attributed design contributions.",
+        points: [
+          "No unauthorized republication of third-party design work.",
+          "Clear attribution of collaborator roles and client studio credits.",
+          "Zero tolerance for deceptive advertising or engagement farming.",
+        ],
+      },
+      {
+        id: "sec-3",
+        title: "3. Account Termination & Suspension",
+        content: "Layerat reserves the right to suspend or terminate accounts that repeatedly violate intellectual property rights, engage in harassment, or tamper with system security.",
+      },
+    ],
+    updatedAt: "2026-08-15T12:00:00Z",
+  },
+  privacy: {
+    id: "privacy",
+    title: "Global Privacy Policy",
+    subtitle: "Transparency in telemetry, creator credentials, and data residency",
+    version: "2026.1",
+    summary: "We prioritize creator privacy. We do not sell user data to data brokers or third-party ad networks.",
+    sections: [
+      {
+        id: "priv-1",
+        title: "1. Information We Collect",
+        content: "We collect information you provide directly (such as profile details, email, and monograph metadata) and minimal operational telemetry necessary to render high-resolution media.",
+        points: [
+          "Authentication credentials managed securely via Supabase Auth.",
+          "Portfolio media stored with secure CDN edge distribution.",
+          "Aggregated view and appreciation counts without invasive trackers.",
+        ],
+      },
+      {
+        id: "priv-2",
+        title: "2. Data Retention & Right to Be Forgotten",
+        content: "You have the absolute right to export all account data or permanently erase your profile and published projects from our servers at any time.",
+      },
+    ],
+    updatedAt: "2026-07-20T10:00:00Z",
+  },
+  guidelines: {
+    id: "guidelines",
+    title: "Community Curation Guidelines",
+    subtitle: "Editorial standards for monographs, critiques, and staff picks",
+    version: "2026.3",
+    summary: "Layerat is dedicated to high-fidelity creative artifacts. We uphold respectful critiques, zero algorithm gaming, and deep focus on craftsmanship.",
+    sections: [
+      {
+        id: "guide-1",
+        title: "1. The Living Case Study Format",
+        content: "We encourage monographs that explain the creative thesis, process iterations, and technical specifications rather than single uncontextualized beauty shots.",
+        points: [
+          "Include meaningful design write-ups and tools utilized.",
+          "Opt for high-resolution uncompressed imagery.",
+          "Credit font foundries, photography collaborators, and 3D specialists.",
+        ],
+      },
+      {
+        id: "guide-2",
+        title: "2. Constructive Critique Standards",
+        content: "Comments should elevate the design discourse. Critique form, typography, layout hierarchy, and interaction design constructively.",
+      },
+    ],
+    updatedAt: "2026-08-25T14:30:00Z",
+  },
+};
+

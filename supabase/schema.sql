@@ -25,6 +25,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     is_verified BOOLEAN DEFAULT false,
     is_online BOOLEAN DEFAULT false,
     followers_count INTEGER DEFAULT 0,
+    role TEXT DEFAULT 'member',
+    badge TEXT,
+    is_suspended BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -910,3 +913,91 @@ DROP TRIGGER IF EXISTS on_auth_user_confirmed ON auth.users;
 CREATE TRIGGER on_auth_user_confirmed
 AFTER UPDATE OF email_confirmed_at ON auth.users
 FOR EACH ROW EXECUTE FUNCTION public.handle_user_email_confirmed();
+
+-- =============================================================================
+-- 8. LAYERAT ADMIN & CURATION DASHBOARD TABLES
+-- =============================================================================
+
+-- Add role & governance fields to profiles if not present
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'member';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS custom_badge TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_suspended BOOLEAN DEFAULT false;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS total_projects_count INTEGER DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS last_sign_in_at TIMESTAMPTZ;
+
+-- Add editorial & featured fields to projects if not present
+ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS featured_order INTEGER;
+ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS badge TEXT;
+ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS view_count INTEGER DEFAULT 0;
+
+-- 8.1 PLATFORM SETTINGS TABLE (Singleton 'global')
+CREATE TABLE IF NOT EXISTS public.platform_settings (
+    id TEXT PRIMARY KEY DEFAULT 'global',
+    announcement_banner_active BOOLEAN DEFAULT true,
+    announcement_banner_text TEXT DEFAULT 'Layerat v2.4 Live: New Curated Collections Studio & Monograph Feeds',
+    announcement_banner_link TEXT DEFAULT 'https://layerat.com/explore',
+    allow_signups BOOLEAN DEFAULT true,
+    maintenance_mode BOOLEAN DEFAULT false,
+    maintenance_message TEXT DEFAULT 'Layerat is undergoing brief scheduled maintenance. We will be back online shortly.',
+    enable_collections BOOLEAN DEFAULT true,
+    max_upload_size_mb INTEGER DEFAULT 25,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Seed global settings
+INSERT INTO public.platform_settings (id, announcement_banner_active, announcement_banner_text, announcement_banner_link, allow_signups, maintenance_mode, maintenance_message, enable_collections, max_upload_size_mb)
+VALUES ('global', true, 'Layerat v2.4 Live: New Curated Collections Studio & Monograph Feeds', 'https://layerat.com/explore', true, false, 'Layerat is undergoing brief scheduled maintenance. We will be back online shortly.', true, 25)
+ON CONFLICT (id) DO NOTHING;
+
+-- 8.2 CURATED COLLECTIONS TABLE
+CREATE TABLE IF NOT EXISTS public.collections (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    description TEXT,
+    cover_image TEXT NOT NULL,
+    project_ids UUID[] DEFAULT '{}',
+    is_featured BOOLEAN DEFAULT false,
+    sort_order INTEGER DEFAULT 1,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 8.3 MODERATION & SAFETY REPORTS TABLE
+CREATE TABLE IF NOT EXISTS public.reports (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE NOT NULL,
+    reporter_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    reason TEXT NOT NULL, -- 'copyright', 'inappropriate_content', 'spam', 'harassment', 'other'
+    description TEXT NOT NULL,
+    status TEXT DEFAULT 'pending' NOT NULL, -- 'pending', 'reviewed', 'resolved', 'dismissed'
+    resolution_notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    resolved_at TIMESTAMPTZ
+);
+
+-- 8.4 MASTER CATEGORIES & TAXONOMY TABLE
+CREATE TABLE IF NOT EXISTS public.categories (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    description TEXT,
+    icon TEXT DEFAULT 'Layers',
+    sub_categories TEXT[] DEFAULT '{}',
+    software_tools TEXT[] DEFAULT '{}',
+    recommended_tags TEXT[] DEFAULT '{}',
+    sort_order INTEGER DEFAULT 1,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 8.5 DYNAMIC LEGAL & POLICY DOCUMENTS TABLE
+CREATE TABLE IF NOT EXISTS public.legal_documents (
+    id TEXT PRIMARY KEY, -- 'terms', 'privacy', 'guidelines'
+    title TEXT NOT NULL,
+    subtitle TEXT,
+    version TEXT DEFAULT '2026.1' NOT NULL,
+    summary TEXT,
+    sections JSONB DEFAULT '[]'::jsonb NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+

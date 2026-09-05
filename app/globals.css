@@ -63,130 +63,140 @@
 :root,
 html[data-theme="light"] {
   /* Brand */
-  --primary-bright-green: #8DFF00;
-  --primary-forest-green: #090C09;
+  --primary-bright-green: #952CE5;
+  --primary-forest-green: #0F0C15;
+  --primary-purple: #952CE5;
+  --primary-purple-dark: #8510DE;
+  --primary-purple-light: #B159F3;
+  --primary-lilac: #CF91FF;
+  --primary-lavender: #DEB2FF;
 
-  /* Main CTA Button Tokens — mapped to --primary-forest-green with high-contrast text */
-  --btn-cta-bg: var(--primary-forest-green);
+  /* Main CTA Button Tokens */
+  --btn-cta-bg: #000000;
   --btn-cta-fg: #FFFFFF;
-  --btn-cta-bg-hover: #000000;
-  --btn-cta-bg-active: #090C09;
+  --btn-cta-bg-hover: #262626;
+  --btn-cta-bg-active: #000000;
 
   /* Chip / Badge Tokens */
-  --chip-bg: #090C09;
-  --chip-fg: #F3F4F0;
-  --chip-bg-hover: #000000;
+  --chip-bg: #F5F5F5;
+  --chip-fg: #171717;
+  --chip-bg-hover: #E5E5E5;
 
   /* Content */
-  --content-primary: #090C09;
-  --content-secondary: #454745;
-  --content-tertiary: #5A5D5A;
-  --content-link: #090C09;
-  --content-link-hover: #000000;
-  --content-link-active: #090C09;
+  --content-primary: #0A0A0A;
+  --content-secondary: #525252;
+  --content-tertiary: #737373;
+  --content-link: #0A0A0A;
+  --content-link-hover: #262626;
+  --content-link-active: #000000;
 
   /* Interactive */
-  --accent: #8DFF00;
-  --accent-hover: #7AE600;
-  --accent-active: #68CC00;
-  --interactive-primary: #090C09;
-  --interactive-primary-hover: #000000;
-  --interactive-primary-active: #000000;
+  --accent: #0A0A0A;
+  --accent-hover: #262626;
+  --accent-active: #000000;
+  --interactive-primary: #0A0A0A;
+  --interactive-primary-hover: #262626;
+  --interactive-primary-active: #0A0A0A;
   --interactive-primary-foreground: #FFFFFF;
-  --interactive-secondary: #868685;
-  --interactive-secondary-hover: #6C6C6B;
-  --interactive-secondary-active: #525251;
-  --negative: #E74848;
-  --negative-hover: #D03238;
-  --negative-active: #BF1E2C;
+  --interactive-secondary: #737373;
+  --interactive-secondary-hover: #525252;
+  --interactive-secondary-active: #404040;
+  --negative: #171717;
+  --negative-hover: #262626;
+  --negative-active: #000000;
 
   /* Surface */
   --bg-screen: #FFFFFF;
-  --bg-elevated: #FFFFFF;
-  --bg-overlay: #090C0914;
-  --bg-dimmer: #FFFFFFB2;
-  --bg-neutral: #090C0914;
-  --bg-neutral-hover: #090C0921;
-  --bg-neutral-active: #090C092E;
-  --border-neutral: #090C091F;
-  --base-contrast: #FFFFFF;
-  --base-dark: #121511;
+  --bg-elevated: #FAFAFA;
+  --bg-overlay: rgba(0, 0, 0, 0.08);
+  --bg-dimmer: rgba(255, 255, 255, 0.85);
+  --bg-neutral: #F5F5F5;
+  --bg-neutral-hover: #E5E5E5;
+  --bg-neutral-active: #D4D4D4;
+  --border-neutral: #E5E5E5;
+  --base-contrast: #0A0A0A;
+  --base-dark: #000000;
   --base-light: #FFFFFF;
 
   /* Sentiment */
-  --sentiment-positive: #2F5711;
-  --sentiment-positive-bg: #2F5711;
-  --sentiment-positive-fg: #FFFFFF;
-  --sentiment-warning: #EDC843;
-  --sentiment-negative: #A8200D;
+  --sentiment-positive: #171717;
+  --sentiment-positive-bg: #F5F5F5;
+  --sentiment-positive-fg: #171717;
+  --sentiment-warning: #737373;
+  --sentiment-negative: #0A0A0A;
 
-  /* Input Focus States — Dark Forest Green */
-  --input-focus-border: #162E1C;
-  --input-focus-ring: rgba(22, 46, 28, 0.16);
+  /* Input Focus States */
+  --input-focus-border: #0A0A0A;
+  --input-focus-ring: rgba(0, 0, 0, 0.08);
 }
 
 html[data-theme="dark"] {
   /* Brand */
-  --primary-bright-green: #8DFF00;
-  --primary-forest-green: #8DFF00;
+  --primary-bright-green: #B159F3;
+  --primary-forest-green: #952CE5;
+  --primary-purple: #952CE5;
+  --primary-purple-dark: #8510DE;
+  --primary-purple-light: #B159F3;
+  --primary-lilac: #CF91FF;
+  --primary-lavender: #DEB2FF;
 
-  /* Main CTA Button Tokens — mapped to neon green with dark text */
-  --btn-cta-bg: var(--primary-forest-green);
-  --btn-cta-fg: #090C09;
-  --btn-cta-bg-hover: #7AE600;
-  --btn-cta-bg-active: #68CC00;
+  /* Main CTA Button Tokens */
+  --btn-cta-bg: #FFFFFF;
+  --btn-cta-fg: #000000;
+  --btn-cta-bg-hover: #E5E5E5;
+  --btn-cta-bg-active: #FFFFFF;
 
   /* Chip / Badge Tokens */
-  --chip-bg: #090C09;
-  --chip-fg: #F3F4F0;
-  --chip-bg-hover: #000000;
+  --chip-bg: #171717;
+  --chip-fg: #EDEDED;
+  --chip-bg-hover: #262626;
 
   /* Content */
-  --content-primary: #F3F4F0;
-  --content-secondary: #C4C7C0;
-  --content-tertiary: #8B8E87;
-  --content-link: #8DFF00;
-  --content-link-hover: #A5FF33;
-  --content-link-active: #F3F4F0;
+  --content-primary: #EDEDED;
+  --content-secondary: #A3A3A3;
+  --content-tertiary: #737373;
+  --content-link: #FFFFFF;
+  --content-link-hover: #E5E5E5;
+  --content-link-active: #FFFFFF;
 
   /* Interactive */
-  --accent: #8DFF00;
-  --accent-hover: #7AE600;
-  --accent-active: #68CC00;
-  --interactive-primary: #090C09;
-  --interactive-primary-hover: #000000;
-  --interactive-primary-active: #000000;
-  --interactive-primary-foreground: #FFFFFF;
-  --interactive-secondary: #8B8E87;
-  --interactive-secondary-hover: #A4A7A0;
-  --interactive-secondary-active: #C4C7C0;
-  --negative: #E74848;
-  --negative-hover: #FF6B6B;
-  --negative-active: #BF1E2C;
+  --accent: #FFFFFF;
+  --accent-hover: #E5E5E5;
+  --accent-active: #FFFFFF;
+  --interactive-primary: #FFFFFF;
+  --interactive-primary-hover: #E5E5E5;
+  --interactive-primary-active: #FFFFFF;
+  --interactive-primary-foreground: #000000;
+  --interactive-secondary: #737373;
+  --interactive-secondary-hover: #A3A3A3;
+  --interactive-secondary-active: #D4D4D4;
+  --negative: #EDEDED;
+  --negative-hover: #FFFFFF;
+  --negative-active: #D4D4D4;
 
   /* Surface */
-  --bg-screen: #121511;
-  --bg-elevated: #1A1D18;
-  --bg-overlay: #00000080;
-  --bg-dimmer: #121511D9;
-  --bg-neutral: #8DFF001A;
-  --bg-neutral-hover: #8DFF0029;
-  --bg-neutral-active: #8DFF0038;
-  --border-neutral: #FFFFFF1F;
-  --base-contrast: #090C09;
-  --base-dark: #121511;
-  --base-light: #F3F4F0;
+  --bg-screen: #000000;
+  --bg-elevated: #0A0A0A;
+  --bg-overlay: rgba(0, 0, 0, 0.75);
+  --bg-dimmer: rgba(0, 0, 0, 0.85);
+  --bg-neutral: #171717;
+  --bg-neutral-hover: #262626;
+  --bg-neutral-active: #404040;
+  --border-neutral: #262626;
+  --base-contrast: #FFFFFF;
+  --base-dark: #000000;
+  --base-light: #FFFFFF;
 
   /* Sentiment */
-  --sentiment-positive: #8DFF00;
-  --sentiment-positive-bg: #8DFF00;
-  --sentiment-positive-fg: #090C09;
-  --sentiment-warning: #EDC843;
-  --sentiment-negative: #FF6B6B;
+  --sentiment-positive: #EDEDED;
+  --sentiment-positive-bg: #171717;
+  --sentiment-positive-fg: #FFFFFF;
+  --sentiment-warning: #A3A3A3;
+  --sentiment-negative: #EDEDED;
 
-  /* Input Focus States — Refined Dark Green */
-  --input-focus-border: #3E6B46;
-  --input-focus-ring: rgba(62, 107, 70, 0.28);
+  /* Input Focus States */
+  --input-focus-border: #FFFFFF;
+  --input-focus-ring: rgba(255, 255, 255, 0.15);
 }
 
 /* Base Body & UI Elements — strictly Inter / var(--font-body) */

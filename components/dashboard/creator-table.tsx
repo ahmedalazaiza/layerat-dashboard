@@ -35,30 +35,40 @@ interface CreatorTableProps {
 }
 
 export function CreatorTable({ creators, projects }: CreatorTableProps) {
-  const { updateProfile, user } = useSession();
-
-  const [verifiedOverrides, setVerifiedOverrides] = useState<Record<string, boolean>>({});
-  const [suspendedIds, setSuspendedIds] = useState<Set<string>>(new Set());
+  const { toggleUserVerified, toggleUserSuspended, confirmAction } = useSession();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleToggleVerification = async (creator: Creator) => {
-    const current = verifiedOverrides[creator.id] ?? creator.isVerified ?? false;
-    const next = !current;
+    const isCurrentlyVerified = creator.isVerified ?? false;
+    const ok = await confirmAction({
+      title: isCurrentlyVerified ? "Revoke Studio Verification?" : "Grant Studio Verification?",
+      description: isCurrentlyVerified
+        ? `Remove official verified badge from @${creator.username}?`
+        : `Grant official verified studio badge to @${creator.username}?`,
+      confirmText: isCurrentlyVerified ? "Revoke Badge" : "Grant Verified Badge",
+      variant: isCurrentlyVerified ? "warning" : "default",
+      targetName: creator.displayName || creator.username,
+    });
+    if (!ok) return;
 
-    setVerifiedOverrides((prev) => ({ ...prev, [creator.id]: next }));
-
-    if (user && user.id === creator.id) {
-      await updateProfile({ isVerified: next });
-    }
+    await toggleUserVerified(creator.id, !isCurrentlyVerified);
   };
 
-  const handleToggleSuspend = (id: string) => {
-    setSuspendedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+  const handleToggleSuspend = async (creator: Creator) => {
+    const isCurrentlySuspended = creator.isSuspended ?? false;
+    const ok = await confirmAction({
+      title: isCurrentlySuspended ? "Lift Account Suspension?" : "Suspend Creator Account?",
+      description: isCurrentlySuspended
+        ? `Restore platform access and public studio showcase for @${creator.username}?`
+        : `Suspend creator @${creator.username}? They will be blocked from publishing new monographs or appearing in public discover feeds.`,
+      confirmText: isCurrentlySuspended ? "Reactivate Studio" : "Suspend Studio",
+      variant: isCurrentlySuspended ? "default" : "destructive",
+      targetName: creator.displayName || creator.username,
+      targetDetails: creator.email,
     });
+    if (!ok) return;
+
+    await toggleUserSuspended(creator.id, !isCurrentlySuspended);
   };
 
   const handleCopyId = (id: string) => {
@@ -88,13 +98,13 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
             {creators.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-12 text-center text-xs text-neutral-400">
-                  No user accounts found matching criteria.
+                  No creator or studio accounts found matching criteria.
                 </td>
               </tr>
             ) : (
               creators.map((creator) => {
-                const isVerified = verifiedOverrides[creator.id] ?? creator.isVerified ?? false;
-                const isSuspended = suspendedIds.has(creator.id);
+                const isVerified = creator.isVerified ?? false;
+                const isSuspended = creator.isSuspended ?? false;
                 const creatorProjectsCount = projects.filter(
                   (p) => p.creator?.id === creator.id || p.creator?.username === creator.username
                 ).length;
@@ -181,7 +191,7 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
                             ? "bg-black text-white dark:bg-white dark:text-black shadow-2xs"
                             : "bg-neutral-100 dark:bg-neutral-900 text-neutral-400 border border-neutral-200 dark:border-neutral-800 hover:text-black dark:hover:text-white"
                         )}
-                        title="Super Admin: Toggle official verified studio badge"
+                        title="Toggle official verified studio badge"
                       >
                         <ShieldCheck className="h-3.5 w-3.5" />
                         <span>{isVerified ? "Verified" : "Unverified"}</span>
@@ -222,16 +232,35 @@ export function CreatorTable({ creators, projects }: CreatorTableProps) {
 
                     {/* Followers Count */}
                     <td className="py-3.5 px-4 text-center font-mono text-xs text-neutral-600 dark:text-neutral-400">
-                      {(creator.followersCount || 120).toLocaleString()}
+                      {(creator.followersCount || 0).toLocaleString()}
                     </td>
 
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        {/* View Monographs */}
+                        <Link
+                          href={`/dashboard/projects?creator=${encodeURIComponent(creator.username)}`}
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors"
+                          title="View Monographs"
+                        >
+                          <FolderKanban className="h-3.5 w-3.5" />
+                        </Link>
+
+                        {/* Public Profile */}
+                        <Link
+                          href={`/u/${creator.username}`}
+                          target="_blank"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors"
+                          title="Open Studio Profile"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </Link>
+
                         {/* Suspend / Unsuspend */}
                         <button
                           type="button"
-                          onClick={() => handleToggleSuspend(creator.id)}
+                          onClick={() => handleToggleSuspend(creator)}
                           className={cn(
                             "flex h-7 w-7 items-center justify-center rounded-lg border transition-colors cursor-pointer",
                             isSuspended

@@ -3,6 +3,7 @@ import { bricolage, inter } from "@/lib/fonts";
 import "./globals.css";
 import { SessionProvider } from "@/lib/session-context";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { ConfirmationProvider } from "@/components/ui/confirmation-modal";
 import { Suspense } from "react";
 import { TopLoader } from "@/components/layout/top-loader";
 import { PageLoadingOverlay } from "@/components/layout/page-loading-overlay";
@@ -48,15 +49,17 @@ export default function RootLayout({
         className={`${inter.className} min-h-screen flex flex-col bg-white dark:bg-black text-neutral-900 dark:text-neutral-100 antialiased selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black`}
       >
         <ThemeProvider>
-          <SessionProvider>
-            <Suspense fallback={null}>
-              <TopLoader />
-              <PageLoadingOverlay />
-            </Suspense>
+          <ConfirmationProvider>
+            <SessionProvider>
+              <Suspense fallback={null}>
+                <TopLoader />
+                <PageLoadingOverlay />
+              </Suspense>
 
-            <main className="flex-1 flex flex-col">{children}</main>
-            <NetworkStatusIndicator />
-          </SessionProvider>
+              <main className="flex-1 flex flex-col">{children}</main>
+              <NetworkStatusIndicator />
+            </SessionProvider>
+          </ConfirmationProvider>
         </ThemeProvider>
       </body>
     </html>

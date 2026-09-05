@@ -10,32 +10,38 @@ import { TopMonographs } from "@/components/dashboard/top-monographs";
 import { LiveActivityStream } from "@/components/dashboard/live-activity-stream";
 import { invalidateAppCache } from "@/lib/supabase/queries";
 import {
-  FolderKanban,
-  Heart,
-  MessageSquare,
   Users,
-  Plus,
   Sparkles,
-  ArrowUpRight,
-  TrendingUp,
-  ShieldCheck,
-  Shield,
   Layers,
-  Database,
-  Download,
-  Server,
+  Heart,
+  Eye,
+  ShieldAlert,
   HardDrive,
-  Radio,
-  Lock,
+  TrendingUp,
+  FolderKanban,
+  FileText,
+  Sliders,
+  Tags,
+  ArrowUpRight,
   RefreshCw,
-  Cpu,
-  FileEdit,
-  Key,
+  Activity,
+  CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function DashboardOverviewPage() {
-  const { user, projects, creators, notifications, refreshFromDb, isLoadingDb } = useSession();
+  const {
+    user,
+    projects,
+    creators,
+    notifications,
+    reports,
+    collections,
+    categories,
+    vitalityMetrics,
+    refreshFromDb,
+  } = useSession();
+
   const [isPurging, setIsPurging] = useState(false);
   const [purgedSuccess, setPurgedSuccess] = useState(false);
 
@@ -43,12 +49,18 @@ export default function DashboardOverviewPage() {
   const stats = useMemo(() => {
     const publishedCount = projects.filter((p) => p.published !== false).length;
     const draftCount = projects.filter((p) => p.published === false).length;
-    const featuredCount = projects.filter((p) => p.featured).length;
+    const featuredCount = projects.filter((p) => p.featured || p.featuredOrder !== null).length;
     const totalLikes = projects.reduce((acc, p) => acc + (p.appreciations || 0), 0);
     const totalComments = projects.reduce((acc, p) => acc + (p.comments?.length || 0), 0);
+    const totalViews = projects.reduce((acc, p) => acc + (p.viewCount || 0), 0);
     const totalCreators = creators.length;
-    const verifiedCreators = creators.filter((c) => c.isVerified).length;
-    const onlineCreators = creators.filter((c) => c.isOnline).length;
+    const activeCreators = vitalityMetrics.activeCreators30D;
+    const pendingReports = reports.filter((r) => r.status === "pending").length;
+    const storageMb = vitalityMetrics.storageConsumedMb || Math.round(projects.reduce((acc, p) => acc + (p.galleryImages?.length || 1), 0) * 3.5);
+
+    // Engagement-to-publishing ratio
+    const totalEngagement = totalLikes + totalComments;
+    const engagementRatio = publishedCount > 0 ? (totalEngagement / publishedCount).toFixed(1) : "0.0";
 
     return {
       publishedCount,
@@ -56,11 +68,32 @@ export default function DashboardOverviewPage() {
       featuredCount,
       totalLikes,
       totalComments,
+      totalViews,
       totalCreators,
-      verifiedCreators,
-      onlineCreators,
+      activeCreators,
+      pendingReports,
+      storageMb,
+      engagementRatio,
     };
-  }, [projects, creators]);
+  }, [projects, creators, reports, vitalityMetrics]);
+
+  // Discipline Breakdown
+  const disciplineDistribution = useMemo(() => {
+    const counts: Record<string, number> = {};
+    projects.forEach((p) => {
+      const cat = p.category || "Uncategorized";
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+
+    const total = projects.length || 1;
+    return Object.entries(counts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percentage: Math.round((count / total) * 100),
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [projects]);
 
   const handleQuickPurge = async () => {
     try {
@@ -76,21 +109,21 @@ export default function DashboardOverviewPage() {
 
   return (
     <div className="space-y-8">
-      {/* Super Admin Top Command Banner */}
-      <div className="relative overflow-hidden rounded-[28px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-6 sm:p-8 shadow-xs">
+      {/* Top Banner: Layerat Master Overview Header */}
+      <div className="relative overflow-hidden rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 p-6 sm:p-8 shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black px-3 py-0.5 text-xs font-bold shadow-2xs">
-                <Shield className="h-3.5 w-3.5 fill-current" />
-                <span>Super Admin Console</span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-black px-3 py-0.5 text-xs font-bold shadow-xs">
+                <Activity className="h-3.5 w-3.5" />
+                <span>Layerat Blueprint Module 1</span>
               </span>
-              <span className="rounded-full bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800 px-2.5 py-0.5 text-[11px] font-mono font-bold flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-black dark:bg-white animate-ping" />
-                <span>Platform Operational</span>
+              <span className="rounded-full bg-neutral-100 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 px-2.5 py-0.5 text-[11px] font-mono font-bold flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-neutral-900 dark:bg-white animate-ping" />
+                <span>Ecosystem Live</span>
               </span>
               <span className="text-xs text-neutral-400 font-mono">
-                Production v1.2.0
+                Engine v2026.1
               </span>
             </div>
 
@@ -100,190 +133,274 @@ export default function DashboardOverviewPage() {
                 "text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50"
               )}
             >
-              Master Command Center — Layerat Platform
+              Master Overview & Vitality Analytics
             </h1>
             <p className="text-xs sm:text-sm text-neutral-500 max-w-2xl leading-relaxed">
-              Full administrative oversight across {projects.length} monographs, {creators.length} creator studios, real-time critique streams, and Gemini Vision AI engines.
+              Real-time administrative telemetry monitoring creator growth velocity, monograph publishing rates, 13-discipline catalog distribution, and safety reports.
             </p>
           </div>
 
-          {/* Super Admin Quick Actions */}
+          {/* Quick Actions */}
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
               type="button"
               onClick={handleQuickPurge}
               disabled={isPurging}
-              className="flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-2.5 text-xs font-bold text-neutral-900 dark:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 active:scale-95 transition-all shadow-xs cursor-pointer disabled:opacity-50"
-              title="Purge in-memory query cache"
+              className="flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-2 text-xs font-bold text-neutral-900 dark:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 active:scale-95 transition-all shadow-xs cursor-pointer disabled:opacity-50"
+              title="Purge cached state and reload from Supabase"
             >
-              <RefreshCw className={cn("h-4 w-4", isPurging && "animate-spin text-black dark:text-white")} />
-              <span>{purgedSuccess ? "Cache Purged!" : "Purge App Cache"}</span>
+              <RefreshCw className={cn("h-4 w-4", isPurging && "animate-spin text-neutral-900 dark:text-white")} />
+              <span>{purgedSuccess ? "Cache Synced!" : "Sync Telemetry"}</span>
             </button>
 
             <Link
-              href="/dashboard/notifications"
-              className="flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-2.5 text-xs font-bold text-neutral-900 dark:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 active:scale-95 transition-all shadow-xs"
+              href="/dashboard/featured"
+              className="flex items-center gap-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black px-4 py-2 text-xs font-bold active:scale-95 transition-all shadow-xs"
             >
-              <Radio className="h-4 w-4 text-neutral-500" />
-              <span>Global Broadcast</span>
-            </Link>
-
-            <Link
-              href="/dashboard/projects"
-              className="flex items-center gap-2 rounded-full bg-black dark:bg-white px-4 py-2.5 text-xs font-bold text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 active:scale-95 transition-all shadow-sm"
-            >
-              <Plus className="h-4 w-4 stroke-[2.5]" />
-              <span>Manage Monographs</span>
+              <Sparkles className="h-4 w-4" />
+              <span>Curation Showcase</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* System Infrastructure Health Metric Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-[20px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black text-xs shadow-xs">
-        <div className="flex items-center gap-2.5 p-2">
-          <Database className="h-4 w-4 text-neutral-900 dark:text-neutral-100 shrink-0" />
-          <div className="min-w-0">
-            <div className="text-[10px] text-neutral-400 uppercase font-mono font-bold">Database</div>
-            <div className="font-bold text-neutral-900 dark:text-neutral-100 truncate">Supabase Live</div>
-          </div>
+      {/* 7 Blueprint Vitality Cards Grid */}
+      <div>
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h2 className="text-xs font-mono uppercase tracking-wider font-bold text-neutral-500 dark:text-neutral-400">
+            7 Key Vitality Metrics
+          </h2>
+          <span className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 font-semibold">
+            Live Stream Data
+          </span>
         </div>
 
-        <div className="flex items-center gap-2.5 p-2">
-          <ShieldCheck className="h-4 w-4 text-neutral-900 dark:text-neutral-100 shrink-0" />
-          <div className="min-w-0">
-            <div className="text-[10px] text-neutral-400 uppercase font-mono font-bold">Security (RLS)</div>
-            <div className="font-bold text-neutral-900 dark:text-neutral-100 truncate">100% Enforced</div>
-          </div>
-        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* 1. Total Registered Creators */}
+          <StatsCard
+            title="Registered Creators"
+            value={stats.totalCreators}
+            subValue={`${stats.activeCreators} Active past 30 days`}
+            icon={Users}
+          />
 
-        <div className="flex items-center gap-2.5 p-2">
-          <Cpu className="h-4 w-4 text-neutral-900 dark:text-neutral-100 shrink-0" />
-          <div className="min-w-0">
-            <div className="text-[10px] text-neutral-400 uppercase font-mono font-bold">AI Vision Engine</div>
-            <div className="font-bold text-neutral-900 dark:text-neutral-100 truncate">Gemini Multimodal</div>
-          </div>
-        </div>
+          {/* 2. Published Monographs */}
+          <StatsCard
+            title="Published Monographs"
+            value={stats.publishedCount}
+            subValue={`${stats.featuredCount} Featured Showcase (${stats.draftCount} in draft)`}
+            icon={FolderKanban}
+          />
 
-        <div className="flex items-center gap-2.5 p-2">
-          <Server className="h-4 w-4 text-neutral-900 dark:text-neutral-100 shrink-0" />
-          <div className="min-w-0">
-            <div className="text-[10px] text-neutral-400 uppercase font-mono font-bold">Server Runtime</div>
-            <div className="font-bold text-neutral-900 dark:text-neutral-100 truncate">Next.js 16 (Turbopack)</div>
-          </div>
-        </div>
-      </div>
+          {/* 3. Total Appreciations Given */}
+          <StatsCard
+            title="Community Appreciations"
+            value={stats.totalLikes.toLocaleString()}
+            subValue={`${stats.engagementRatio} per monograph ratio`}
+            icon={Heart}
+          />
 
-      {/* KPI Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <StatsCard
-          title="Platform Monographs"
-          value={projects.length}
-          subValue={`${stats.publishedCount} Live / ${stats.draftCount} Draft`}
-          change="+14.2%"
-          trend="up"
-          icon={FolderKanban}
-          sparklineData={[20, 30, 45, 50, 65, 80, 100]}
-        />
-        <StatsCard
-          title="Platform Appreciations"
-          value={stats.totalLikes.toLocaleString()}
-          subValue="Community Hearts"
-          change="+28.6%"
-          trend="up"
-          icon={Heart}
-          sparklineData={[40, 35, 60, 75, 70, 85, 95]}
-        />
-        <StatsCard
-          title="Critiques & Comments"
-          value={stats.totalComments.toLocaleString()}
-          subValue="Discussion Stream"
-          change="+18.9%"
-          trend="up"
-          icon={MessageSquare}
-          sparklineData={[15, 25, 30, 50, 45, 70, 85]}
-        />
-        <StatsCard
-          title="User & Studio Accounts"
-          value={stats.totalCreators}
-          subValue={`${stats.verifiedCreators} Verified`}
-          change="+8.4%"
-          trend="up"
-          icon={Users}
-          sparklineData={[20, 35, 40, 55, 65, 80, 90]}
-        />
-      </div>
+          {/* 4. Total Public Views Recorded */}
+          <StatsCard
+            title="Public Impressions & Views"
+            value={stats.totalViews.toLocaleString()}
+            subValue="Catalog view count"
+            icon={Eye}
+          />
 
-      {/* Super Admin Control Navigation Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {[
-          {
-            label: "Monographs",
-            desc: "Kanban & data tables",
-            href: "/dashboard/projects",
-            icon: FolderKanban,
-          },
-          {
-            label: "User Accounts",
-            desc: "Verification & roles",
-            href: "/dashboard/creators",
-            icon: Users,
-          },
-          {
-            label: "Site CMS Studio",
-            desc: "Edit all site content",
-            href: "/dashboard/cms",
-            icon: FileEdit,
-          },
-          {
-            label: "Critiques Queue",
-            desc: "Comment moderation",
-            href: "/dashboard/comments",
-            icon: MessageSquare,
-          },
-          {
-            label: "Master Taxonomy",
-            desc: "13 Disciplines CRUD",
-            href: "/dashboard/taxonomy",
-            icon: Layers,
-          },
-          {
-            label: "Roles & RBAC",
-            desc: "Team governance",
-            href: "/dashboard/roles",
-            icon: Key,
-          },
-        ].map((action) => {
-          const Icon = action.icon;
-          return (
-            <Link
-              key={action.href}
-              href={action.href}
-              className="group flex flex-col justify-between rounded-[20px] border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black p-4 transition-all duration-200 hover:border-black dark:hover:border-white hover:shadow-xs cursor-pointer"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black transition-colors">
-                  <Icon className="h-4 w-4" />
-                </div>
-                <ArrowUpRight className="h-3.5 w-3.5 text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+          {/* 5. Active Creators (30 Days) */}
+          <StatsCard
+            title="30-Day Active Creators"
+            value={stats.activeCreators}
+            subValue="Actively publishing / curating"
+            icon={Activity}
+          />
+
+          {/* 6. Pending Safety Reports (Highlight in Amber/Red if > 0) */}
+          <Link
+            href="/dashboard/moderation"
+            className={cn(
+              "rounded-2xl p-5 border transition-all duration-200 block",
+              stats.pendingReports > 0
+                ? "bg-red-500/10 border-red-500/40 hover:border-red-500"
+                : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400 font-bold">
+                Safety Queue
+              </span>
+              <div
+                className={cn(
+                  "p-2 rounded-xl",
+                  stats.pendingReports > 0
+                    ? "bg-red-500 text-white animate-pulse"
+                    : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500"
+                )}
+              >
+                <ShieldAlert className="h-4 w-4" />
               </div>
-              <div className="mt-3">
-                <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100 truncate">
-                  {action.label}
-                </div>
-                <div className="text-[10px] text-neutral-400 truncate">
-                  {action.desc}
-                </div>
+            </div>
+            <div className="mt-3">
+              <div
+                className={cn(
+                  "text-2xl sm:text-3xl font-extrabold tracking-tight font-mono",
+                  stats.pendingReports > 0 ? "text-red-600 dark:text-red-400" : "text-neutral-900 dark:text-white"
+                )}
+              >
+                {stats.pendingReports}
               </div>
-            </Link>
-          );
-        })}
+              <div className="text-xs text-neutral-500 mt-1 flex items-center justify-between">
+                <span>{stats.pendingReports > 0 ? "Action Required" : "Queue Empty"}</span>
+                <span className="text-[10px] font-mono text-neutral-900 dark:text-neutral-100 flex items-center gap-1 font-semibold">
+                  Review <ArrowUpRight className="h-3 w-3" />
+                </span>
+              </div>
+            </div>
+          </Link>
+
+          {/* 7. Estimated Media Storage Consumed */}
+          <StatsCard
+            title="Media Storage Vault"
+            value={`${stats.storageMb > 1024 ? (stats.storageMb / 1024).toFixed(1) + " GB" : stats.storageMb + " MB"}`}
+            subValue="CDN & Image bucket assets"
+            change="+5.4%"
+            trend="up"
+            icon={HardDrive}
+            sparklineData={[20, 25, 28, 32, 35, 40, 44]}
+          />
+
+          {/* 8. Curated Collections Card */}
+          <Link
+            href="/dashboard/collections"
+            className="rounded-2xl p-5 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-400 dark:hover:border-neutral-600 transition-all duration-200 block"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400 font-bold">
+                Curated Collections
+              </span>
+              <div className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100">
+                <Layers className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white font-mono">
+                {collections.length}
+              </div>
+              <div className="text-xs text-neutral-500 mt-1 flex items-center justify-between">
+                <span>Editorial anthologies</span>
+                <span className="text-[10px] font-mono text-neutral-900 dark:text-neutral-100 flex items-center gap-1 font-semibold">
+                  Studio <ArrowUpRight className="h-3 w-3" />
+                </span>
+              </div>
+            </div>
+          </Link>
+        </div>
       </div>
 
-      {/* Interactive Platform Velocity & Analytics Chart */}
-      <AnalyticsChart projects={projects} />
+      {/* Blueprint Navigation Grid: All 8 Modules Direct Access */}
+      <div>
+        <div className="mb-3 px-1">
+          <h2 className="text-xs font-mono uppercase tracking-wider font-bold text-neutral-500 dark:text-neutral-400">
+            Layerat Blueprint Modules Matrix
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { id: "M1", title: "Overview & Telemetry", href: "/dashboard", icon: Activity, desc: "Vitality metrics & charts" },
+            { id: "M2", title: "Platform Settings", href: "/dashboard/settings", icon: Sliders, desc: "Banner, maintenance & uploads" },
+            { id: "M3", title: "Featured Showcase", href: "/dashboard/featured", icon: Sparkles, desc: "Homepage order & badges" },
+            { id: "M4", title: "Creators & Studios", href: "/dashboard/creators", icon: Users, desc: "Profiles, verification & studios" },
+            { id: "M5", title: "Collections Studio", href: "/dashboard/collections", icon: Layers, desc: "Visual multi-project picker" },
+            { id: "M6", title: "Moderation Queue", href: "/dashboard/moderation", icon: ShieldAlert, desc: "Reports & 1-click safety" },
+            { id: "M7", title: "Taxonomy Engine", href: "/dashboard/taxonomy", icon: Tags, desc: "13 Master Disciplines" },
+            { id: "M8", title: "Legal & Policies", href: "/dashboard/legal", icon: FileText, desc: "Terms, privacy & versioning" },
+          ].map((mod) => {
+            const Icon = mod.icon;
+            return (
+              <Link
+                key={mod.id}
+                href={mod.href}
+                className="group flex flex-col justify-between rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 transition-all hover:border-neutral-400 dark:hover:border-neutral-600 hover:shadow-xs"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100">
+                    {mod.id}
+                  </span>
+                  <div className="h-7 w-7 rounded-lg flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 group-hover:bg-neutral-900 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black transition-colors">
+                    <Icon className="h-3.5 w-3.5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100 group-hover:text-black dark:group-hover:text-white transition-colors">
+                    {mod.title}
+                  </div>
+                  <div className="text-[11px] text-neutral-400 truncate mt-0.5">
+                    {mod.desc}
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
 
-      {/* Dual Section: Top Monographs & Real-time Live Stream */}
+      {/* Dual Section: Publishing Analytics Chart & 13 Disciplines Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <AnalyticsChart projects={projects} />
+        </div>
+
+        {/* 13 Master Disciplines Distribution */}
+        <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
+            <div>
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                Discipline Distribution
+              </h3>
+              <p className="text-[11px] text-neutral-400">
+                13 Master Disciplines across catalog
+              </p>
+            </div>
+            <Link
+              href="/dashboard/taxonomy"
+              className="text-xs font-mono text-neutral-900 dark:text-neutral-100 hover:underline flex items-center gap-1 font-semibold"
+            >
+              Manage <ArrowUpRight className="h-3 w-3" />
+            </Link>
+          </div>
+
+          <div className="space-y-3 overflow-y-auto max-h-[320px] pr-1">
+            {disciplineDistribution.map((d) => (
+              <div key={d.name} className="space-y-1">
+                <div className="flex items-center justify-between text-xs font-medium">
+                  <span className="text-neutral-800 dark:text-neutral-200 truncate max-w-[180px]">
+                    {d.name}
+                  </span>
+                  <span className="font-mono text-[11px] text-neutral-400">
+                    {d.count} ({d.percentage}%)
+                  </span>
+                </div>
+                <div className="h-1.5 w-full bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-neutral-900 dark:bg-white rounded-full transition-all duration-500"
+                    style={{ width: `${Math.max(4, d.percentage)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-2 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-500">
+            <span>Total Catalog: {projects.length} monographs</span>
+            <span className="font-mono text-neutral-900 dark:text-neutral-100 font-bold">
+              {stats.engagementRatio}x Engagement
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Dual Section: Top Monographs & Real-time Activity Stream */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TopMonographs projects={projects} />
         <LiveActivityStream notifications={notifications} />
@@ -291,3 +408,4 @@ export default function DashboardOverviewPage() {
     </div>
   );
 }
+
